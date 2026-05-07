@@ -1,8 +1,8 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useParams, Link } from "react-router-dom";
 import {
-  AlertTriangle, CheckCircle, ArrowLeft, Loader2, Wrench,
-  ChevronDown, ChevronUp, Sparkles, Code2,
+  AlertTriangle, CheckCircle, ArrowLeft, Loader2,
+  Wrench, ChevronDown, ChevronUp, Sparkles, Code2, Zap,
 } from "lucide-react";
 import { useIssues } from "../hooks/useIssues";
 import { useApplyRepairs, useDataset } from "../hooks/useDatasets";
@@ -21,16 +21,17 @@ export default function IssuesPage() {
   const [selectedSuggestions, setSelectedSuggestions] = useState(new Set());
   const [filter, setFilter] = useState("all");
   const [showCode, setShowCode] = useState(false);
-
-  if (isLoading) {
-    return (
-      <div className="flex items-center justify-center h-64">
-        <Loader2 className="animate-spin" style={{ width: 24, height: 24, color: "#6366f1" }} />
-      </div>
-    );
-  }
+  const [applyingAll, setApplyingAll] = useState(false);
 
   const issues = issuesData?.issues || [];
+
+  // All open suggestion IDs across all issues
+  const allOpenSuggestionIds = useMemo(() => {
+    return issues
+      .filter((i) => i.status === "open")
+      .flatMap((i) => (i.repair_suggestions || []).filter((s) => s.is_recommended).map((s) => s.id));
+  }, [issues]);
+
   const filtered =
     filter === "all" ? issues :
     filter === "open" ? issues.filter((i) => i.status === "open") :
@@ -56,65 +57,114 @@ export default function IssuesPage() {
     }
   };
 
+  const handleApplyAll = async () => {
+    if (allOpenSuggestionIds.length === 0) return;
+    setApplyingAll(true);
+    try {
+      await applyRepairs.mutateAsync(allOpenSuggestionIds);
+      setSelectedSuggestions(new Set());
+    } catch (err) {
+      alert("Repair failed: " + (err.response?.data?.detail || err.message));
+    } finally {
+      setApplyingAll(false);
+    }
+  };
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <Loader2 className="animate-spin" style={{ width: 24, height: 24, color: "var(--accent)" }} />
+      </div>
+    );
+  }
+
+  const openCount = issues.filter((i) => i.status === "open").length;
+
   return (
     <div className="space-y-5 animate-fade-in">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between gap-3 flex-wrap">
         <div className="flex items-center gap-3">
           <Link
             to={`/dataset/${id}`}
             className="w-8 h-8 flex items-center justify-center rounded-lg transition-all"
-            style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.07)" }}
-            onMouseEnter={(e) => { e.currentTarget.style.background = "rgba(255,255,255,0.07)"; }}
-            onMouseLeave={(e) => { e.currentTarget.style.background = "rgba(255,255,255,0.04)"; }}
+            style={{ background: "var(--bg-hover)", border: `1px solid var(--border)` }}
+            onMouseEnter={(e) => { e.currentTarget.style.borderColor = "var(--border-strong)"; }}
+            onMouseLeave={(e) => { e.currentTarget.style.borderColor = "var(--border)"; }}
           >
-            <ArrowLeft style={{ width: 14, height: 14, color: "#94a3b8" }} />
+            <ArrowLeft style={{ width: 14, height: 14, color: "var(--text-secondary)" }} />
           </Link>
           <div>
-            <h2 className="text-xl font-bold text-white">Issues & Repairs</h2>
-            <p className="text-xs mt-0.5" style={{ color: "#64748b" }}>
+            <h2 className="text-xl font-bold" style={{ color: "var(--text-primary)" }}>Issues & Repairs</h2>
+            <p className="text-xs mt-0.5" style={{ color: "var(--text-muted)" }}>
               {dataset?.name} · {issues.length} issue{issues.length !== 1 ? "s" : ""}
             </p>
           </div>
         </div>
-        <div className="flex items-center gap-2">
+
+        <div className="flex items-center gap-2 flex-wrap">
+          {/* Export code */}
           <button
             onClick={() => setShowCode(true)}
             className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all"
-            style={{
-              background: "rgba(99,102,241,0.1)",
-              color: "#a5b4fc",
-              border: "1px solid rgba(99,102,241,0.2)",
-            }}
-            onMouseEnter={(e) => { e.currentTarget.style.background = "rgba(99,102,241,0.18)"; }}
-            onMouseLeave={(e) => { e.currentTarget.style.background = "rgba(99,102,241,0.1)"; }}
+            style={{ background: "var(--accent-bg)", color: "var(--accent-light)", border: `1px solid var(--accent-border)` }}
           >
             <Code2 style={{ width: 13, height: 13 }} />
             Export Code
           </button>
+
+          {/* Apply All (one-click) */}
+          {openCount > 0 && (
+            <button
+              onClick={handleApplyAll}
+              disabled={applyingAll || applyRepairs.isPending}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold text-white transition-all disabled:opacity-50"
+              style={{ background: "linear-gradient(135deg, #10b981, #059669)", boxShadow: "0 2px 10px rgba(16,185,129,0.3)" }}
+              title="Apply the recommended repair for every open issue at once"
+            >
+              {applyingAll
+                ? <Loader2 style={{ width: 13, height: 13 }} className="animate-spin" />
+                : <Zap style={{ width: 13, height: 13 }} />
+              }
+              Fix All ({openCount})
+            </button>
+          )}
+
+          {/* Apply selected */}
           {selectedSuggestions.size > 0 && (
             <button
               onClick={handleApplySelected}
               disabled={applyRepairs.isPending}
               className="flex items-center gap-2 px-4 py-1.5 rounded-lg text-sm font-semibold text-white transition-all disabled:opacity-50"
-              style={{
-                background: "linear-gradient(135deg, #6366f1, #4f46e5)",
-                boxShadow: "0 2px 12px rgba(99,102,241,0.35)",
-              }}
+              style={{ background: "linear-gradient(135deg, var(--accent), #4f46e5)", boxShadow: "0 2px 10px rgba(99,102,241,0.3)" }}
             >
-              {applyRepairs.isPending ? (
-                <Loader2 style={{ width: 14, height: 14 }} className="animate-spin" />
-              ) : (
-                <Wrench style={{ width: 14, height: 14 }} />
-              )}
-              Apply {selectedSuggestions.size} Repair{selectedSuggestions.size > 1 ? "s" : ""}
+              {applyRepairs.isPending
+                ? <Loader2 style={{ width: 14, height: 14 }} className="animate-spin" />
+                : <Wrench style={{ width: 14, height: 14 }} />
+              }
+              Apply {selectedSuggestions.size} Selected
             </button>
           )}
         </div>
       </div>
 
+      {/* Apply All info banner */}
+      {openCount > 0 && (
+        <div
+          className="rounded-xl px-4 py-3 flex items-center gap-3"
+          style={{ background: "rgba(16,185,129,0.06)", border: "1px solid rgba(16,185,129,0.15)" }}
+        >
+          <Zap style={{ width: 14, height: 14, color: "#10b981", flexShrink: 0 }} />
+          <p className="text-xs" style={{ color: "var(--text-secondary)" }}>
+            <span className="font-semibold" style={{ color: "#10b981" }}>Fix All</span>{" "}
+            applies the recommended repair strategy for each open issue in one click — no need to review each one individually.
+            You can also expand issues below to pick specific strategies.
+          </p>
+        </div>
+      )}
+
       {/* NL Command Bar */}
-      <NLCommandBar datasetId={id} onSuccess={() => {}} />
+      <NLCommandBar datasetId={id} />
 
       {/* Filters */}
       <div className="flex items-center gap-2">
@@ -125,37 +175,35 @@ export default function IssuesPage() {
             className="px-3 py-1.5 rounded-lg text-xs font-medium transition-all capitalize"
             style={
               filter === f
-                ? { background: "rgba(99,102,241,0.15)", color: "#a5b4fc", border: "1px solid rgba(99,102,241,0.2)" }
-                : { background: "rgba(255,255,255,0.04)", color: "#64748b", border: "1px solid rgba(255,255,255,0.06)" }
+                ? { background: "var(--accent-bg)", color: "var(--accent-light)", border: `1px solid var(--accent-border)` }
+                : { background: "var(--bg-hover)", color: "var(--text-muted)", border: `1px solid var(--border)` }
             }
           >
             {f}
-            {f === "open" && (
+            {f === "open" && openCount > 0 && (
               <span
                 className="ml-1.5 text-[10px] font-bold px-1.5 py-0.5 rounded-full"
-                style={{ background: "rgba(245,158,11,0.15)", color: "#f59e0b" }}
+                style={{ background: "rgba(245,158,11,0.15)", color: "var(--warning)" }}
               >
-                {issues.filter((i) => i.status === "open").length}
+                {openCount}
               </span>
             )}
           </button>
         ))}
       </div>
 
-      {/* Issues List */}
+      {/* Issues list */}
       {filtered.length === 0 ? (
         <div
           className="text-center py-12 rounded-xl"
-          style={{ background: "#111827", border: "1px solid #1e293b" }}
+          style={{ background: "var(--bg-card)", border: `1px solid var(--border)` }}
         >
-          <div
-            className="w-12 h-12 rounded-2xl flex items-center justify-center mx-auto mb-3"
-            style={{ background: "rgba(16,185,129,0.1)" }}
-          >
+          <div className="w-12 h-12 rounded-2xl flex items-center justify-center mx-auto mb-3"
+            style={{ background: "rgba(16,185,129,0.1)" }}>
             <CheckCircle style={{ width: 20, height: 20, color: "#10b981" }} />
           </div>
-          <p className="font-semibold text-white">No issues to show</p>
-          <p className="text-sm mt-1" style={{ color: "#64748b" }}>
+          <p className="font-semibold" style={{ color: "var(--text-primary)" }}>No issues to show</p>
+          <p className="text-sm mt-1" style={{ color: "var(--text-muted)" }}>
             {filter === "open" ? "All issues have been repaired!" : "Nothing here yet."}
           </p>
         </div>
@@ -170,15 +218,14 @@ export default function IssuesPage() {
                 key={issue.id}
                 className="rounded-xl overflow-hidden transition-all"
                 style={{
-                  background: "#111827",
-                  border: isExpanded ? "1px solid rgba(99,102,241,0.25)" : "1px solid #1e293b",
+                  background: "var(--bg-card)",
+                  border: `1px solid ${isExpanded ? "var(--accent-border)" : "var(--border)"}`,
                 }}
               >
-                {/* Issue Header */}
                 <button
                   onClick={() => setExpandedIssue(isExpanded ? null : issue.id)}
-                  className="w-full px-5 py-4 flex items-center justify-between transition-colors text-left"
-                  onMouseEnter={(e) => { e.currentTarget.style.background = "rgba(255,255,255,0.02)"; }}
+                  className="w-full px-5 py-4 flex items-center justify-between text-left transition-colors"
+                  onMouseEnter={(e) => { e.currentTarget.style.background = "var(--bg-hover)"; }}
                   onMouseLeave={(e) => { e.currentTarget.style.background = "transparent"; }}
                 >
                   <div className="flex items-center gap-3">
@@ -189,49 +236,40 @@ export default function IssuesPage() {
                       {issue.severity}
                     </span>
                     <div>
-                      <p className="text-sm font-medium text-white">{issue.description}</p>
-                      <p className="text-xs mt-0.5" style={{ color: "#64748b" }}>
+                      <p className="text-sm font-medium" style={{ color: "var(--text-primary)" }}>
+                        {issue.description}
+                      </p>
+                      <p className="text-xs mt-0.5" style={{ color: "var(--text-muted)" }}>
                         {issue.issue_type} · {issue.affected_count} rows · {issue.column_name || "all columns"}
                       </p>
                     </div>
                   </div>
                   <div className="flex items-center gap-2 flex-shrink-0">
-                    {aiData && (
-                      <span className="flex items-center gap-1">
-                        <Sparkles style={{ width: 11, height: 11, color: "#6366f1" }} />
-                      </span>
-                    )}
+                    {aiData && <Sparkles style={{ width: 11, height: 11, color: "var(--accent)" }} />}
                     <span
                       className="text-[10px] font-medium px-2 py-0.5 rounded-full"
                       style={
                         issue.status === "open"
-                          ? { background: "rgba(245,158,11,0.12)", color: "#f59e0b" }
-                          : { background: "rgba(16,185,129,0.12)", color: "#10b981" }
+                          ? { background: "rgba(245,158,11,0.12)", color: "var(--warning)" }
+                          : { background: "rgba(16,185,129,0.12)", color: "var(--success)" }
                       }
                     >
                       {issue.status}
                     </span>
-                    {isExpanded ? (
-                      <ChevronUp style={{ width: 14, height: 14, color: "#64748b" }} />
-                    ) : (
-                      <ChevronDown style={{ width: 14, height: 14, color: "#64748b" }} />
-                    )}
+                    {isExpanded
+                      ? <ChevronUp style={{ width: 14, height: 14, color: "var(--text-muted)" }} />
+                      : <ChevronDown style={{ width: 14, height: 14, color: "var(--text-muted)" }} />
+                    }
                   </div>
                 </button>
 
-                {/* Expanded */}
                 {isExpanded && (
-                  <div className="px-5 pb-5 pt-2 space-y-3" style={{ borderTop: "1px solid rgba(255,255,255,0.04)" }}>
-                    {/* AI Explanation */}
+                  <div className="px-5 pb-5 pt-2 space-y-3" style={{ borderTop: `1px solid var(--border)` }}>
                     {aiData && <IssueAIExplainRow explanation={aiData} />}
 
-                    {/* Repair Suggestions */}
                     {issue.repair_suggestions?.length > 0 && (
                       <div>
-                        <p
-                          className="text-[11px] font-semibold uppercase tracking-wider mb-2"
-                          style={{ color: "#475569" }}
-                        >
+                        <p className="text-[11px] font-bold uppercase tracking-wider mb-2" style={{ color: "var(--text-faint)" }}>
                           Repair Suggestions
                         </p>
                         <div className="space-y-2">
@@ -242,8 +280,8 @@ export default function IssuesPage() {
                                 key={s.id}
                                 className="flex items-start gap-3 p-3 rounded-lg cursor-pointer transition-all"
                                 style={{
-                                  background: selected ? "rgba(99,102,241,0.08)" : "rgba(255,255,255,0.02)",
-                                  border: selected ? "1px solid rgba(99,102,241,0.3)" : "1px solid rgba(255,255,255,0.06)",
+                                  background: selected ? "var(--accent-bg)" : "var(--bg-hover)",
+                                  border: `1px solid ${selected ? "var(--accent-border)" : "var(--border)"}`,
                                 }}
                               >
                                 <div className="relative mt-0.5 flex-shrink-0">
@@ -257,40 +295,38 @@ export default function IssuesPage() {
                                   <div
                                     className="w-4 h-4 rounded flex items-center justify-center transition-all"
                                     style={{
-                                      background: selected ? "#6366f1" : "rgba(255,255,255,0.06)",
-                                      border: selected ? "1px solid #6366f1" : "1px solid rgba(255,255,255,0.12)",
+                                      background: selected ? "var(--accent)" : "var(--bg-hover)",
+                                      border: `1px solid ${selected ? "var(--accent)" : "var(--border-strong)"}`,
                                     }}
                                   >
                                     {selected && (
-                                      <svg className="w-2.5 h-2.5 text-white" fill="currentColor" viewBox="0 0 12 12">
-                                        <path d="M10 3L5 8.5 2 5.5" stroke="white" strokeWidth="1.5" fill="none" strokeLinecap="round" strokeLinejoin="round" />
+                                      <svg className="w-2.5 h-2.5 text-white" fill="none" viewBox="0 0 12 12">
+                                        <path d="M2 6l3 3 5-5" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
                                       </svg>
                                     )}
                                   </div>
                                 </div>
                                 <div className="flex-1 min-w-0">
                                   <div className="flex items-center gap-2">
-                                    <p className="text-sm font-medium text-white">{s.description}</p>
+                                    <p className="text-sm font-medium" style={{ color: "var(--text-primary)" }}>
+                                      {s.description}
+                                    </p>
                                     {s.is_recommended && (
                                       <span
                                         className="text-[10px] font-bold px-1.5 py-0.5 rounded-full flex-shrink-0"
-                                        style={{ background: "rgba(16,185,129,0.12)", color: "#10b981" }}
+                                        style={{ background: "rgba(16,185,129,0.12)", color: "var(--success)" }}
                                       >
                                         Recommended
                                       </span>
                                     )}
                                   </div>
                                   <div className="flex items-center gap-3 mt-1">
-                                    <span className="text-xs" style={{ color: "#64748b" }}>
-                                      Strategy: <span style={{ color: "#a5b4fc" }}>{s.strategy}</span>
+                                    <span className="text-xs" style={{ color: "var(--text-muted)" }}>
+                                      Strategy: <span style={{ color: "var(--accent-light)" }}>{s.strategy}</span>
                                     </span>
-                                    <span className="text-xs" style={{ color: "#64748b" }}>
+                                    <span className="text-xs" style={{ color: "var(--text-muted)" }}>
                                       Confidence:{" "}
-                                      <span
-                                        style={{
-                                          color: s.confidence >= 0.8 ? "#10b981" : s.confidence >= 0.5 ? "#f59e0b" : "#ef4444",
-                                        }}
-                                      >
+                                      <span style={{ color: s.confidence >= 0.8 ? "var(--success)" : s.confidence >= 0.5 ? "var(--warning)" : "var(--danger)" }}>
                                         {Math.round(s.confidence * 100)}%
                                       </span>
                                     </span>
@@ -317,10 +353,10 @@ export default function IssuesPage() {
 
 function getSeverityStyle(sev) {
   const map = {
-    critical: { background: "rgba(220,38,38,0.15)", color: "#dc2626" },
-    high: { background: "rgba(239,68,68,0.12)", color: "#ef4444" },
-    medium: { background: "rgba(245,158,11,0.12)", color: "#f59e0b" },
-    low: { background: "rgba(100,116,139,0.12)", color: "#94a3b8" },
+    critical: { background: "rgba(220,38,38,0.15)",   color: "#dc2626" },
+    high:     { background: "rgba(239,68,68,0.12)",   color: "#ef4444" },
+    medium:   { background: "rgba(245,158,11,0.12)",  color: "#f59e0b" },
+    low:      { background: "rgba(100,116,139,0.12)", color: "#94a3b8" },
   };
   return map[sev] || map.medium;
 }

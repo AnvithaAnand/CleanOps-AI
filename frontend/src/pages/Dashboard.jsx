@@ -3,91 +3,52 @@ import { Upload, Database, AlertTriangle, CheckCircle, TrendingUp, Sparkles } fr
 import { useDatasets } from "../hooks/useDatasets";
 import DatasetCard from "../components/dashboard/DatasetCard";
 
-function SkeletonCard() {
-  return (
-    <div className="rounded-xl p-5 shimmer" style={{ height: 148, background: "#111827" }} />
-  );
-}
-
 export default function Dashboard() {
   const { data: datasets, isLoading } = useDatasets();
 
-  const total = datasets?.length || 0;
+  const total     = datasets?.length || 0;
   const validated = datasets?.filter((d) => d.status === "validated").length || 0;
   const withIssues = datasets?.filter((d) => d.trust_score != null && d.trust_score < 80).length || 0;
-  const healthy = datasets?.filter((d) => d.trust_score != null && d.trust_score >= 80).length || 0;
-  const avgScore = total > 0 && datasets?.some((d) => d.trust_score != null)
-    ? Math.round(
-        datasets.filter((d) => d.trust_score != null).reduce((s, d) => s + d.trust_score, 0) /
-          datasets.filter((d) => d.trust_score != null).length
-      )
+  const scored    = datasets?.filter((d) => d.trust_score != null) || [];
+  const avgScore  = scored.length
+    ? Math.round(scored.reduce((s, d) => s + d.trust_score, 0) / scored.length)
     : null;
 
   const stats = [
-    {
-      label: "Total Datasets",
-      value: total,
-      icon: Database,
-      color: "#6366f1",
-      gradient: "linear-gradient(135deg, rgba(99,102,241,0.15), rgba(139,92,246,0.08))",
-      border: "rgba(99,102,241,0.2)",
-    },
-    {
-      label: "Validated",
-      value: validated,
-      icon: CheckCircle,
-      color: "#10b981",
-      gradient: "linear-gradient(135deg, rgba(16,185,129,0.12), rgba(16,185,129,0.05))",
-      border: "rgba(16,185,129,0.2)",
-    },
-    {
-      label: "Needs Attention",
-      value: withIssues,
-      icon: AlertTriangle,
-      color: "#f59e0b",
-      gradient: "linear-gradient(135deg, rgba(245,158,11,0.12), rgba(245,158,11,0.05))",
-      border: "rgba(245,158,11,0.2)",
-    },
-    {
-      label: "Avg Trust Score",
-      value: avgScore != null ? `${avgScore}/100` : "—",
-      icon: TrendingUp,
-      color: "#06b6d4",
-      gradient: "linear-gradient(135deg, rgba(6,182,212,0.12), rgba(6,182,212,0.05))",
-      border: "rgba(6,182,212,0.2)",
-    },
+    { label: "Total Datasets",  value: total,                      icon: Database,       color: "#6366f1", grad: "rgba(99,102,241,0.1)",  border: "rgba(99,102,241,0.2)" },
+    { label: "Validated",       value: validated,                   icon: CheckCircle,    color: "#10b981", grad: "rgba(16,185,129,0.08)", border: "rgba(16,185,129,0.18)" },
+    { label: "Needs Attention", value: withIssues,                  icon: AlertTriangle,  color: "#f59e0b", grad: "rgba(245,158,11,0.08)", border: "rgba(245,158,11,0.18)" },
+    { label: "Avg Trust Score", value: avgScore != null ? `${avgScore}/100` : "—", icon: TrendingUp, color: "#06b6d4", grad: "rgba(6,182,212,0.08)", border: "rgba(6,182,212,0.18)" },
   ];
 
   return (
     <div className="space-y-6 animate-fade-in">
-      {/* Page Title */}
       <div>
-        <h1 className="text-2xl font-bold text-white">Dashboard</h1>
-        <p className="text-sm mt-1" style={{ color: "#64748b" }}>
+        <h1 className="text-2xl font-bold" style={{ color: "var(--text-primary)" }}>Dashboard</h1>
+        <p className="text-sm mt-1" style={{ color: "var(--text-muted)" }}>
           Monitor and manage your data quality at a glance
         </p>
       </div>
 
-      {/* Stat Cards */}
+      {/* Stat cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        {stats.map(({ label, value, icon: Icon, color, gradient, border }) => (
+        {stats.map(({ label, value, icon: Icon, color, grad, border }) => (
           <div
             key={label}
             className="rounded-xl p-5"
-            style={{ background: gradient, border: `1px solid ${border}` }}
+            style={{ background: grad, border: `1px solid ${border}` }}
           >
             <div className="flex items-center justify-between mb-3">
-              <span className="text-xs font-medium uppercase tracking-wider" style={{ color: "#64748b" }}>
+              <span className="text-[11px] font-semibold uppercase tracking-wider" style={{ color: "var(--text-muted)" }}>
                 {label}
               </span>
-              <div
-                className="w-7 h-7 rounded-lg flex items-center justify-center"
-                style={{ background: `${color}20` }}
-              >
+              <div className="w-7 h-7 rounded-lg flex items-center justify-center" style={{ background: `${color}22` }}>
                 <Icon style={{ width: 14, height: 14, color }} />
               </div>
             </div>
-            <p className="text-3xl font-bold text-white">{isLoading ? "—" : value}</p>
+            <p className="text-3xl font-bold" style={{ color: "var(--text-primary)" }}>
+              {isLoading ? "—" : value}
+            </p>
           </div>
         ))}
       </div>
@@ -95,9 +56,11 @@ export default function Dashboard() {
       {/* Datasets */}
       {isLoading ? (
         <div>
-          <div className="h-5 shimmer rounded w-32 mb-4" />
+          <div className="h-4 shimmer rounded w-28 mb-4" />
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {[1, 2, 3].map((i) => <SkeletonCard key={i} />)}
+            {[1,2,3].map((i) => (
+              <div key={i} className="rounded-xl shimmer" style={{ height: 148 }} />
+            ))}
           </div>
         </div>
       ) : total === 0 ? (
@@ -106,10 +69,10 @@ export default function Dashboard() {
         <div>
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-2">
-              <h3 className="text-sm font-semibold text-white">Your Datasets</h3>
+              <h3 className="text-sm font-semibold" style={{ color: "var(--text-primary)" }}>Your Datasets</h3>
               <span
                 className="text-xs font-medium px-2 py-0.5 rounded-full"
-                style={{ background: "rgba(99,102,241,0.12)", color: "#a5b4fc" }}
+                style={{ background: "var(--accent-bg)", color: "var(--accent-light)" }}
               >
                 {total}
               </span>
@@ -117,18 +80,14 @@ export default function Dashboard() {
             <Link
               to="/upload"
               className="flex items-center gap-1.5 text-xs font-medium transition-colors"
-              style={{ color: "#6366f1" }}
-              onMouseEnter={(e) => { e.currentTarget.style.color = "#a5b4fc"; }}
-              onMouseLeave={(e) => { e.currentTarget.style.color = "#6366f1"; }}
+              style={{ color: "var(--accent)", textDecoration: "none" }}
             >
               <Upload style={{ width: 12, height: 12 }} />
               Upload New
             </Link>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {datasets.map((ds) => (
-              <DatasetCard key={ds.id} dataset={ds} />
-            ))}
+            {datasets.map((ds) => <DatasetCard key={ds.id} dataset={ds} />)}
           </div>
         </div>
       )}
@@ -140,19 +99,16 @@ function EmptyState() {
   return (
     <div
       className="rounded-2xl p-12 text-center"
-      style={{
-        background: "linear-gradient(135deg, rgba(99,102,241,0.06), rgba(139,92,246,0.03))",
-        border: "1px solid rgba(99,102,241,0.12)",
-      }}
+      style={{ background: "var(--accent-bg)", border: `1px solid var(--accent-border)` }}
     >
       <div
         className="w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-5"
-        style={{ background: "rgba(99,102,241,0.12)", border: "1px solid rgba(99,102,241,0.2)" }}
+        style={{ background: "var(--accent-bg)", border: `1px solid var(--accent-border)` }}
       >
-        <Database style={{ width: 28, height: 28, color: "#6366f1" }} />
+        <Database style={{ width: 28, height: 28, color: "var(--accent)" }} />
       </div>
-      <h3 className="text-lg font-bold text-white mb-2">No datasets yet</h3>
-      <p className="text-sm mb-6 max-w-xs mx-auto" style={{ color: "#64748b" }}>
+      <h3 className="text-lg font-bold mb-2" style={{ color: "var(--text-primary)" }}>No datasets yet</h3>
+      <p className="text-sm mb-6 max-w-xs mx-auto" style={{ color: "var(--text-muted)" }}>
         Upload your first dataset to start profiling data quality and detecting issues automatically.
       </p>
       <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
@@ -160,15 +116,16 @@ function EmptyState() {
           to="/upload"
           className="flex items-center gap-2 px-6 py-2.5 rounded-xl text-sm font-semibold text-white transition-all"
           style={{
-            background: "linear-gradient(135deg, #6366f1, #4f46e5)",
-            boxShadow: "0 4px 20px rgba(99,102,241,0.35)",
+            background: "linear-gradient(135deg, var(--accent), #4f46e5)",
+            boxShadow: "0 4px 18px rgba(99,102,241,0.3)",
+            textDecoration: "none",
           }}
         >
           <Upload style={{ width: 15, height: 15 }} />
           Upload Dataset
         </Link>
-        <div className="flex items-center gap-1.5 text-xs" style={{ color: "#475569" }}>
-          <Sparkles style={{ width: 12, height: 12, color: "#6366f1" }} />
+        <div className="flex items-center gap-1.5 text-xs" style={{ color: "var(--text-faint)" }}>
+          <Sparkles style={{ width: 12, height: 12, color: "var(--accent)" }} />
           Supports CSV, XLSX, Parquet
         </div>
       </div>
