@@ -36,6 +36,37 @@ from app.models.audit import AuditLog
 router = APIRouter(prefix="/api/datasets", tags=["datasets"])
 
 
+async def _run_repairs_background(dataset_id: str, suggestion_ids: list[str]):
+    async with async_session() as db:
+        try:
+            repair_result = await apply_repairs(dataset_id, suggestion_ids, db)
+
+            result = await db.execute(
+                select(ColumnProfile).where(ColumnProfile.dataset_id == dataset_id)
+            )
+            profiles = result.scalars().all()
+            result = await db.execute(
+                select(DetectedIssue).where(
+                    DetectedIssue.dataset_id == dataset_id,
+                    DetectedIssue.status == "open",
+                )
+            )
+            open_issues = result.scalars().all()
+            result = await db.execute(
+                select(Dataset).where(Dataset.id == dataset_id)
+            )
+            dataset = result.scalar_one()
+
+            score = calculate_trust_score(
+                dataset_id, profiles, open_issues, dataset.row_count or 0
+            )
+            dataset.trust_score = score.overall_score
+            await db.commit()
+        except Exception as e:
+            await db.rollback()
+            print(f"Background repair failed: {e}")
+
+
 async def _process_dataset(dataset_id: str):
     async with async_session() as db:
         try:
@@ -258,10 +289,11 @@ async def get_issues(
     )
 
 
-@router.post("/{dataset_id}/repair", response_model=RepairResultResponse)
+@router.post("/{dataset_id}/repair")
 async def apply_dataset_repairs(
     dataset_id: str,
     body: RepairRequest,
+    background_tasks: BackgroundTasks,
     db: AsyncSession = Depends(get_db),
 ):
     result = await db.execute(
@@ -270,35 +302,11 @@ async def apply_dataset_repairs(
     if not result.scalar_one_or_none():
         raise HTTPException(404, "Dataset not found")
 
-    repair_result = await apply_repairs(dataset_id, body.suggestion_ids, db)
+    background_tasks.add_task(
+        _run_repairs_background, dataset_id, body.suggestion_ids
+    )
 
-    result = await db.execute(
-        select(ColumnProfile).where(ColumnProfile.dataset_id == dataset_id)
-    )
-    profiles = result.scalars().all()
-    result = await db.execute(
-        select(DetectedIssue).where(
-            DetectedIssue.dataset_id == dataset_id,
-            DetectedIssue.status == "open",
-        )
-    )
-    open_issues = result.scalars().all()
-    result = await db.execute(
-        select(Dataset).where(Dataset.id == dataset_id)
-    )
-    dataset = result.scalar_one()
-
-    score = calculate_trust_score(
-        dataset_id, profiles, open_issues, dataset.row_count or 0
-    )
-    dataset.trust_score = score.overall_score
-
-    return RepairResultResponse(
-        version_number=repair_result["version_number"],
-        repairs_applied=repair_result["repairs_applied"],
-        rows_affected=repair_result["rows_affected"],
-        new_trust_score=score.overall_score,
-    )
+    return {"status": "processing", "repairs_queued": len(body.suggestion_ids)}
 
 
 @router.get("/{dataset_id}/versions", response_model=list[DatasetVersionResponse])

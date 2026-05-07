@@ -42,11 +42,17 @@ export function useApplyRepairs(datasetId) {
     mutationFn: (suggestionIds) =>
       applyRepairs(datasetId, suggestionIds).then((r) => r.data),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["dataset", datasetId] });
-      queryClient.invalidateQueries({ queryKey: ["issues", datasetId] });
-      queryClient.invalidateQueries({ queryKey: ["trustScore", datasetId] });
-      queryClient.invalidateQueries({ queryKey: ["versions", datasetId] });
-      queryClient.invalidateQueries({ queryKey: ["audit", datasetId] });
+      const refetchAll = () => {
+        queryClient.invalidateQueries({ queryKey: ["dataset", datasetId] });
+        queryClient.invalidateQueries({ queryKey: ["issues", datasetId] });
+        queryClient.invalidateQueries({ queryKey: ["trustScore", datasetId] });
+        queryClient.invalidateQueries({ queryKey: ["versions", datasetId] });
+        queryClient.invalidateQueries({ queryKey: ["audit", datasetId] });
+      };
+      refetchAll();
+      setTimeout(refetchAll, 3000);
+      setTimeout(refetchAll, 8000);
+      setTimeout(refetchAll, 15000);
     },
   });
 }
