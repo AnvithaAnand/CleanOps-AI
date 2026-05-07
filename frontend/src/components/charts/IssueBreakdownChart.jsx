@@ -1,6 +1,21 @@
-import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer, Legend } from "recharts";
+import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer } from "recharts";
 
-const COLORS = ["#ef4444", "#f59e0b", "#3b82f6", "#8b5cf6", "#22c55e", "#06b6d4"];
+const COLORS = ["#ef4444", "#f59e0b", "#6366f1", "#8b5cf6", "#10b981", "#06b6d4"];
+
+const CustomTooltip = ({ active, payload }) => {
+  if (!active || !payload?.length) return null;
+  return (
+    <div
+      className="text-xs px-2.5 py-2 rounded-lg"
+      style={{ background: "#1e293b", border: "1px solid #334155", color: "#e2e8f0" }}
+    >
+      <p style={{ color: "#94a3b8" }}>{payload[0].name}</p>
+      <p className="font-semibold" style={{ color: payload[0].payload.color }}>
+        {payload[0].value} issue{payload[0].value !== 1 ? "s" : ""}
+      </p>
+    </div>
+  );
+};
 
 export default function IssueBreakdownChart({ issues }) {
   if (!issues || issues.length === 0) return null;
@@ -11,26 +26,43 @@ export default function IssueBreakdownChart({ issues }) {
     typeMap[type] = (typeMap[type] || 0) + 1;
   });
 
-  const data = Object.entries(typeMap).map(([name, value]) => ({ name, value }));
+  const data = Object.entries(typeMap).map(([name, value], i) => ({
+    name,
+    value,
+    color: COLORS[i % COLORS.length],
+  }));
 
   return (
-    <ResponsiveContainer width="100%" height={200}>
-      <PieChart>
-        <Pie
-          data={data}
-          cx="50%"
-          cy="50%"
-          outerRadius={70}
-          dataKey="value"
-          label={({ name, value }) => `${name} (${value})`}
-          labelLine={false}
-        >
-          {data.map((_, idx) => (
-            <Cell key={idx} fill={COLORS[idx % COLORS.length]} />
-          ))}
-        </Pie>
-        <Tooltip />
-      </PieChart>
-    </ResponsiveContainer>
+    <div className="flex items-center gap-4">
+      <ResponsiveContainer width={120} height={120}>
+        <PieChart>
+          <Pie
+            data={data}
+            cx="50%"
+            cy="50%"
+            innerRadius={32}
+            outerRadius={54}
+            dataKey="value"
+            stroke="none"
+          >
+            {data.map((entry, idx) => (
+              <Cell key={idx} fill={COLORS[idx % COLORS.length]} />
+            ))}
+          </Pie>
+          <Tooltip content={<CustomTooltip />} />
+        </PieChart>
+      </ResponsiveContainer>
+      <div className="flex-1 space-y-1.5">
+        {data.map(({ name, value, color }) => (
+          <div key={name} className="flex items-center justify-between gap-2">
+            <div className="flex items-center gap-1.5">
+              <span className="w-2 h-2 rounded-full flex-shrink-0" style={{ background: color }} />
+              <span className="text-xs truncate" style={{ color: "#94a3b8", maxWidth: 160 }}>{name}</span>
+            </div>
+            <span className="text-xs font-semibold flex-shrink-0" style={{ color }}>{value}</span>
+          </div>
+        ))}
+      </div>
+    </div>
   );
 }

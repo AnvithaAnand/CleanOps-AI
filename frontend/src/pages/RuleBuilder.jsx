@@ -1,63 +1,46 @@
 import { useState } from "react";
-import {
-  ShieldCheck,
-  Plus,
-  Trash2,
-  Loader2,
-} from "lucide-react";
+import { ShieldCheck, Plus, Trash2, Loader2 } from "lucide-react";
 import { useRules, useCreateRule, useDeleteRule } from "../hooks/useRules";
 import { useDatasets } from "../hooks/useDatasets";
-import { cn, getSeverityColor } from "../lib/utils";
 
 const RULE_TYPES = [
   { value: "not_null", label: "Not Null", params: [] },
   { value: "unique", label: "Unique", params: [] },
-  {
-    value: "range",
-    label: "Range",
-    params: [
-      { key: "min", label: "Minimum", type: "number" },
-      { key: "max", label: "Maximum", type: "number" },
-    ],
-  },
-  {
-    value: "regex",
-    label: "Regex Pattern",
-    params: [{ key: "pattern", label: "Pattern", type: "text" }],
-  },
-  {
-    value: "enum",
-    label: "Allowed Values",
-    params: [
-      {
-        key: "values",
-        label: "Values (comma-separated)",
-        type: "text",
-        isArray: true,
-      },
-    ],
-  },
-  {
-    value: "type_check",
-    label: "Type Check",
-    params: [
-      {
-        key: "type",
-        label: "Expected Type",
-        type: "select",
-        options: ["integer", "float", "datetime", "string"],
-      },
-    ],
-  },
-  {
-    value: "length",
-    label: "String Length",
-    params: [
-      { key: "min", label: "Min Length", type: "number" },
-      { key: "max", label: "Max Length", type: "number" },
-    ],
-  },
+  { value: "range", label: "Range", params: [
+    { key: "min", label: "Minimum", type: "number" },
+    { key: "max", label: "Maximum", type: "number" },
+  ]},
+  { value: "regex", label: "Regex Pattern", params: [
+    { key: "pattern", label: "Pattern", type: "text" },
+  ]},
+  { value: "enum", label: "Allowed Values", params: [
+    { key: "values", label: "Values (comma-separated)", type: "text", isArray: true },
+  ]},
+  { value: "type_check", label: "Type Check", params: [
+    { key: "type", label: "Expected Type", type: "select", options: ["integer", "float", "datetime", "string"] },
+  ]},
+  { value: "length", label: "String Length", params: [
+    { key: "min", label: "Min Length", type: "number" },
+    { key: "max", label: "Max Length", type: "number" },
+  ]},
 ];
+
+const severityStyle = {
+  critical: { bg: "rgba(220,38,38,0.12)", color: "#dc2626" },
+  warning: { bg: "rgba(245,158,11,0.12)", color: "#f59e0b" },
+  info: { bg: "rgba(99,102,241,0.12)", color: "#a5b4fc" },
+};
+
+const inputStyle = {
+  background: "rgba(255,255,255,0.04)",
+  border: "1px solid rgba(255,255,255,0.08)",
+  color: "#e2e8f0",
+  borderRadius: "0.5rem",
+  padding: "0.5rem 0.75rem",
+  width: "100%",
+  fontSize: "0.875rem",
+  outline: "none",
+};
 
 export default function RuleBuilder() {
   const { data: rules, isLoading } = useRules();
@@ -66,12 +49,8 @@ export default function RuleBuilder() {
   const deleteRule = useDeleteRule();
 
   const [form, setForm] = useState({
-    name: "",
-    dataset_id: "",
-    column_name: "",
-    rule_type: "not_null",
-    severity: "warning",
-    parameters: {},
+    name: "", dataset_id: "", column_name: "",
+    rule_type: "not_null", severity: "warning", parameters: {},
   });
 
   const ruleType = RULE_TYPES.find((r) => r.value === form.rule_type);
@@ -79,7 +58,6 @@ export default function RuleBuilder() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!form.name || !form.rule_type) return;
-
     const params = { ...form.parameters };
     ruleType?.params.forEach((p) => {
       if (p.isArray && typeof params[p.key] === "string") {
@@ -89,7 +67,6 @@ export default function RuleBuilder() {
         params[p.key] = Number(params[p.key]);
       }
     });
-
     try {
       await createRule.mutateAsync({
         name: form.name,
@@ -99,220 +76,206 @@ export default function RuleBuilder() {
         severity: form.severity,
         parameters: params,
       });
-      setForm({
-        name: "",
-        dataset_id: "",
-        column_name: "",
-        rule_type: "not_null",
-        severity: "warning",
-        parameters: {},
-      });
+      setForm({ name: "", dataset_id: "", column_name: "", rule_type: "not_null", severity: "warning", parameters: {} });
     } catch (err) {
       alert("Failed to create rule: " + (err.response?.data?.detail || err.message));
     }
   };
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-      <div className="bg-card border border-border rounded-xl p-6">
-        <h3 className="text-base font-semibold mb-4 flex items-center gap-2">
-          <Plus className="w-4 h-4" />
-          Create Quality Rule
-        </h3>
+    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 animate-fade-in">
+      {/* Create Form */}
+      <div className="rounded-xl p-6" style={{ background: "#111827", border: "1px solid #1e293b" }}>
+        <div className="flex items-center gap-2 mb-5">
+          <div
+            className="w-8 h-8 rounded-lg flex items-center justify-center"
+            style={{ background: "rgba(99,102,241,0.12)" }}
+          >
+            <Plus style={{ width: 15, height: 15, color: "#6366f1" }} />
+          </div>
+          <h3 className="text-base font-semibold text-white">Create Quality Rule</h3>
+        </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <label className="text-sm font-medium text-foreground">
-              Rule Name
-            </label>
+          <FormField label="Rule Name">
             <input
               type="text"
               value={form.name}
               onChange={(e) => setForm({ ...form, name: e.target.value })}
               placeholder="e.g., Age must be positive"
-              className="mt-1 w-full px-3 py-2 bg-background border border-input rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+              style={inputStyle}
               required
             />
-          </div>
+          </FormField>
 
           <div className="grid grid-cols-2 gap-3">
-            <div>
-              <label className="text-sm font-medium">Dataset</label>
+            <FormField label="Dataset">
               <select
                 value={form.dataset_id}
-                onChange={(e) =>
-                  setForm({ ...form, dataset_id: e.target.value })
-                }
-                className="mt-1 w-full px-3 py-2 bg-background border border-input rounded-lg text-sm"
+                onChange={(e) => setForm({ ...form, dataset_id: e.target.value })}
+                style={inputStyle}
               >
-                <option value="">Global (all datasets)</option>
-                {datasets?.map((d) => (
-                  <option key={d.id} value={d.id}>
-                    {d.name}
-                  </option>
-                ))}
+                <option value="">Global (all)</option>
+                {datasets?.map((d) => <option key={d.id} value={d.id}>{d.name}</option>)}
               </select>
-            </div>
-            <div>
-              <label className="text-sm font-medium">Column</label>
+            </FormField>
+            <FormField label="Column">
               <input
                 type="text"
                 value={form.column_name}
-                onChange={(e) =>
-                  setForm({ ...form, column_name: e.target.value })
-                }
+                onChange={(e) => setForm({ ...form, column_name: e.target.value })}
                 placeholder="Column name"
-                className="mt-1 w-full px-3 py-2 bg-background border border-input rounded-lg text-sm"
+                style={inputStyle}
               />
-            </div>
+            </FormField>
           </div>
 
           <div className="grid grid-cols-2 gap-3">
-            <div>
-              <label className="text-sm font-medium">Rule Type</label>
+            <FormField label="Rule Type">
               <select
                 value={form.rule_type}
-                onChange={(e) =>
-                  setForm({
-                    ...form,
-                    rule_type: e.target.value,
-                    parameters: {},
-                  })
-                }
-                className="mt-1 w-full px-3 py-2 bg-background border border-input rounded-lg text-sm"
+                onChange={(e) => setForm({ ...form, rule_type: e.target.value, parameters: {} })}
+                style={inputStyle}
               >
-                {RULE_TYPES.map((r) => (
-                  <option key={r.value} value={r.value}>
-                    {r.label}
-                  </option>
-                ))}
+                {RULE_TYPES.map((r) => <option key={r.value} value={r.value}>{r.label}</option>)}
               </select>
-            </div>
-            <div>
-              <label className="text-sm font-medium">Severity</label>
+            </FormField>
+            <FormField label="Severity">
               <select
                 value={form.severity}
-                onChange={(e) =>
-                  setForm({ ...form, severity: e.target.value })
-                }
-                className="mt-1 w-full px-3 py-2 bg-background border border-input rounded-lg text-sm"
+                onChange={(e) => setForm({ ...form, severity: e.target.value })}
+                style={inputStyle}
               >
                 <option value="critical">Critical</option>
                 <option value="warning">Warning</option>
                 <option value="info">Info</option>
               </select>
-            </div>
+            </FormField>
           </div>
 
           {ruleType?.params.map((p) => (
-            <div key={p.key}>
-              <label className="text-sm font-medium">{p.label}</label>
+            <FormField key={p.key} label={p.label}>
               {p.type === "select" ? (
                 <select
                   value={form.parameters[p.key] || ""}
-                  onChange={(e) =>
-                    setForm({
-                      ...form,
-                      parameters: {
-                        ...form.parameters,
-                        [p.key]: e.target.value,
-                      },
-                    })
-                  }
-                  className="mt-1 w-full px-3 py-2 bg-background border border-input rounded-lg text-sm"
+                  onChange={(e) => setForm({ ...form, parameters: { ...form.parameters, [p.key]: e.target.value } })}
+                  style={inputStyle}
                 >
                   <option value="">Select...</option>
-                  {p.options.map((o) => (
-                    <option key={o} value={o}>
-                      {o}
-                    </option>
-                  ))}
+                  {p.options.map((o) => <option key={o} value={o}>{o}</option>)}
                 </select>
               ) : (
                 <input
                   type={p.type}
                   value={form.parameters[p.key] || ""}
-                  onChange={(e) =>
-                    setForm({
-                      ...form,
-                      parameters: {
-                        ...form.parameters,
-                        [p.key]: e.target.value,
-                      },
-                    })
-                  }
+                  onChange={(e) => setForm({ ...form, parameters: { ...form.parameters, [p.key]: e.target.value } })}
                   placeholder={p.label}
-                  className="mt-1 w-full px-3 py-2 bg-background border border-input rounded-lg text-sm"
+                  style={inputStyle}
                 />
               )}
-            </div>
+            </FormField>
           ))}
 
           <button
             type="submit"
             disabled={createRule.isPending}
-            className="w-full py-2.5 bg-primary text-primary-foreground rounded-lg font-medium hover:bg-primary/90 disabled:opacity-50 flex items-center justify-center gap-2"
+            className="w-full py-2.5 rounded-xl text-sm font-semibold text-white flex items-center justify-center gap-2 disabled:opacity-50 transition-all"
+            style={{ background: "linear-gradient(135deg, #6366f1, #4f46e5)", boxShadow: "0 2px 12px rgba(99,102,241,0.3)" }}
           >
             {createRule.isPending ? (
-              <Loader2 className="w-4 h-4 animate-spin" />
+              <Loader2 style={{ width: 14, height: 14 }} className="animate-spin" />
             ) : (
-              <ShieldCheck className="w-4 h-4" />
+              <ShieldCheck style={{ width: 14, height: 14 }} />
             )}
             Create Rule
           </button>
         </form>
       </div>
 
-      <div className="bg-card border border-border rounded-xl p-6">
-        <h3 className="text-base font-semibold mb-4">Existing Rules</h3>
+      {/* Rules List */}
+      <div className="rounded-xl p-6" style={{ background: "#111827", border: "1px solid #1e293b" }}>
+        <div className="flex items-center gap-2 mb-5">
+          <div
+            className="w-8 h-8 rounded-lg flex items-center justify-center"
+            style={{ background: "rgba(99,102,241,0.12)" }}
+          >
+            <ShieldCheck style={{ width: 15, height: 15, color: "#6366f1" }} />
+          </div>
+          <h3 className="text-base font-semibold text-white">Active Rules</h3>
+          {rules?.length > 0 && (
+            <span
+              className="ml-auto text-xs font-medium px-2 py-0.5 rounded-full"
+              style={{ background: "rgba(99,102,241,0.12)", color: "#a5b4fc" }}
+            >
+              {rules.length}
+            </span>
+          )}
+        </div>
 
         {isLoading ? (
           <div className="flex justify-center py-10">
-            <Loader2 className="w-6 h-6 animate-spin" />
+            <Loader2 style={{ width: 20, height: 20, color: "#6366f1" }} className="animate-spin" />
           </div>
-        ) : rules?.length === 0 ? (
-          <div className="text-center py-10 text-muted-foreground text-sm">
-            No rules created yet
+        ) : !rules?.length ? (
+          <div
+            className="text-center py-10 rounded-xl"
+            style={{ background: "rgba(255,255,255,0.02)", border: "1px dashed #1e293b" }}
+          >
+            <ShieldCheck style={{ width: 24, height: 24, color: "#334155" }} className="mx-auto mb-2" />
+            <p className="text-sm" style={{ color: "#475569" }}>No rules created yet</p>
           </div>
         ) : (
           <div className="space-y-2">
-            {rules?.map((rule) => (
-              <div
-                key={rule.id}
-                className="flex items-center justify-between p-3 border border-border rounded-lg"
-              >
-                <div>
-                  <p className="text-sm font-medium">{rule.name}</p>
-                  <p className="text-xs text-muted-foreground">
-                    {rule.rule_type} •{" "}
-                    {rule.column_name || "all columns"}
-                  </p>
+            {rules.map((rule) => {
+              const sev = severityStyle[rule.severity] || severityStyle.info;
+              return (
+                <div
+                  key={rule.id}
+                  className="flex items-center justify-between p-3 rounded-lg transition-all"
+                  style={{ background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.04)" }}
+                  onMouseEnter={(e) => { e.currentTarget.style.borderColor = "#334155"; }}
+                  onMouseLeave={(e) => { e.currentTarget.style.borderColor = "rgba(255,255,255,0.04)"; }}
+                >
+                  <div>
+                    <p className="text-sm font-medium text-white">{rule.name}</p>
+                    <p className="text-xs mt-0.5" style={{ color: "#64748b" }}>
+                      {rule.rule_type} · {rule.column_name || "all columns"}
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span
+                      className="text-[10px] font-semibold px-2 py-0.5 rounded-full"
+                      style={{ background: sev.bg, color: sev.color }}
+                    >
+                      {rule.severity}
+                    </span>
+                    <button
+                      onClick={() => { if (confirm("Delete this rule?")) deleteRule.mutate(rule.id); }}
+                      className="w-6 h-6 flex items-center justify-center rounded transition-all"
+                      style={{ color: "#475569" }}
+                      onMouseEnter={(e) => { e.currentTarget.style.color = "#ef4444"; }}
+                      onMouseLeave={(e) => { e.currentTarget.style.color = "#475569"; }}
+                    >
+                      <Trash2 style={{ width: 13, height: 13 }} />
+                    </button>
+                  </div>
                 </div>
-                <div className="flex items-center gap-2">
-                  <span
-                    className={cn(
-                      "px-2 py-0.5 rounded text-xs font-medium",
-                      getSeverityColor(rule.severity)
-                    )}
-                  >
-                    {rule.severity}
-                  </span>
-                  <button
-                    onClick={() => {
-                      if (confirm("Delete this rule?")) {
-                        deleteRule.mutate(rule.id);
-                      }
-                    }}
-                    className="p-1 text-muted-foreground hover:text-red-500 transition-colors"
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </button>
-                </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         )}
       </div>
+    </div>
+  );
+}
+
+function FormField({ label, children }) {
+  return (
+    <div>
+      <label className="block text-xs font-semibold uppercase tracking-wider mb-1.5" style={{ color: "#64748b" }}>
+        {label}
+      </label>
+      {children}
     </div>
   );
 }
