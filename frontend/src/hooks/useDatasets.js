@@ -1,0 +1,74 @@
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import {
+  listDatasets,
+  getDataset,
+  uploadDataset,
+  applyRepairs,
+  downloadDataset,
+  previewData,
+} from "../api/datasets";
+
+export function useDatasets(params) {
+  return useQuery({
+    queryKey: ["datasets", params],
+    queryFn: () => listDatasets(params).then((r) => r.data),
+  });
+}
+
+export function useDataset(id) {
+  return useQuery({
+    queryKey: ["dataset", id],
+    queryFn: () => getDataset(id).then((r) => r.data),
+    enabled: !!id,
+    refetchInterval: (query) => {
+      const data = query.state.data;
+      if (data && ["uploaded", "profiling"].includes(data.status)) return 2000;
+      return false;
+    },
+  });
+}
+
+export function useUploadDataset() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (formData) => uploadDataset(formData).then((r) => r.data),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["datasets"] }),
+  });
+}
+
+export function useApplyRepairs(datasetId) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (suggestionIds) =>
+      applyRepairs(datasetId, suggestionIds).then((r) => r.data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["dataset", datasetId] });
+      queryClient.invalidateQueries({ queryKey: ["issues", datasetId] });
+      queryClient.invalidateQueries({ queryKey: ["trustScore", datasetId] });
+      queryClient.invalidateQueries({ queryKey: ["versions", datasetId] });
+      queryClient.invalidateQueries({ queryKey: ["audit", datasetId] });
+    },
+  });
+}
+
+export function useDownloadDataset() {
+  return useMutation({
+    mutationFn: ({ id, version }) => downloadDataset(id, version),
+    onSuccess: (response, { name }) => {
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = `${name || "dataset"}_cleaned.csv`;
+      link.click();
+      window.URL.revokeObjectURL(url);
+    },
+  });
+}
+
+export function usePreviewData(id, rows = 100) {
+  return useQuery({
+    queryKey: ["preview", id, rows],
+    queryFn: () => previewData(id, rows).then((r) => r.data),
+    enabled: !!id,
+  });
+}

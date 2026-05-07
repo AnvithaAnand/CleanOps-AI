@@ -1,0 +1,22 @@
+transaction_id,customer_id,amount,currency,product,quantity,transaction_date,payment_method
+TXN001,1,150.00,USD,Widget A,2,2024-06-15,credit_card
+TXN002,2,275.50,USD,Widget B,1,2024-06-16,debit_card
+TXN003,3,,USD,Widget A,3,2024-06-17,credit_card
+TXN004,4,89.99,USD,Widget C,1,2024-06-18,paypal
+TXN005,5,425.00,EUR,Widget B,2,2024-06-19,credit_card
+TXN006,6,150.00,USD,Widget A,2,06/20/2024,debit_card
+TXN007,7,312.75,USD,Widget D,1,2024-06-21,credit_card
+TXN008,8,-50.00,USD,Widget A,1,2024-06-22,credit_card
+TXN009,9,199.99,USD,,2,2024-06-23,paypal
+TXN010,10,550.00,USD,Widget B,3,2024-06-24,credit_card
+TXN001,1,150.00,USD,Widget A,2,2024-06-15,credit_card
+TXN011,11,175.25,INR,Widget C,1,2024-06-25,debit_card
+TXN012,12,,USD,Widget A,2,2024-06-26,credit_card
+TXN013,13,89.99,USD,Widget D,one,2024-06-27,bank_transfer
+TXN014,14,15000.00,USD,Widget B,1,2024-06-28,credit_card
+TXN015,15,225.00,USD,Widget A,2,2024-06-29,
+TXN016,16,99.50,USD,Widget C,1,2024-06-30,credit_card
+TXN017,17,340.00,USD,Widget B,2,2024-07-01,debit_card
+TXN018,999,180.75,USD,Widget A,1,2024-07-02,credit_card
+TXN019,19,0.00,USD,Widget D,0,2024-07-03,paypal
+TXN020,20,275.00,USD,Widget B,2,2024-07-04,credit_card

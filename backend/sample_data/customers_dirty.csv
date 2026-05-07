@@ -1,0 +1,26 @@
+customer_id,name,email,phone,age,revenue,city,signup_date,status
+1,John Smith,john@example.com,+1-555-0101,28,45000.50,New York,2024-01-15,active
+2,Jane Doe,jane@example.com,+1-555-0102,35,62000.00,Los Angeles,2024-02-20,active
+3,Bob Wilson,,+1-555-0103,42,38000.75,Chicago,2024-03-10,active
+4,Alice Brown,alice@example.com,+1-555-0104,,55000.00,Houston,2024-04-05,inactive
+5,Charlie Davis,charlie@example.com,,29,41000.25,Phoenix,2024-05-12,active
+6,Eva Martinez,invalid-email,+1-555-0106,31,48000.00,Philadelphia,2024-06-18,active
+7,Frank Johnson,frank@example.com,+1-555-0107,45,72000.50,San Antonio,2024-07-22,active
+8,Grace Lee,grace@example.com,+1-555-0108,999,53000.00,San Diego,2024-08-30,active
+9,Henry Wang,henry@example.com,+1-555-0109,38,,Dallas,2024-09-14,inactive
+10,Ivy Chen,ivy@example.com,+1-555-0110,27,39000.00,San Jose,2024-10-01,active
+11,Jack Brown,jack@example.com,+1-555-0111,33,46000.75,,2024-11-05,active
+12,Kate Wilson,kate@example.com,+1-555-0112,41,61000.00,Austin,2024-12-12,active
+13,John Smith,john@example.com,+1-555-0101,28,45000.50,New York,2024-01-15,active
+14,Leo Park,,+1-555-0114,36,43000.25,Jacksonville,2025-01-20,active
+15,Mia Garcia,mia@example.com,+1-555-0115,-5,51000.00,San Francisco,2025-02-14,inactive
+16,Noah Kim,noah@example.com,+1-555-0116,30,47000.50,Columbus,2025-03-08,active
+17,Olivia Brown,olivia@example.com,+1-555-0117,44,65000.00,Charlotte,15/04/2025,active
+18,Peter Zhang,peter@example.com,+1-555-0118,29,not_a_number,Indianapolis,2025-05-01,active
+19,Quinn Adams,quinn@example.com,+1-555-0119,37,49000.00,Seattle,2025-06-15,active
+20,Rachel Lee,,+1-555-0120,32,54000.75,Denver,2025-07-20,active
+21,Sam Taylor,sam@example.com,+1-555-0121,26,37000.00,Washington,2025-08-10,ACTIVE
+22,Tina Nguyen,tina@example.com,+1-555-0122,39,58000.25,Nashville,2025-09-25,active
+23,Uma Patel,uma@example.com,+1-555-0123,43,250000.00,El Paso,2025-10-30,active
+24,Victor Silva,victor@example.com,+1-555-0124,34,44000.50,Boston,2025-11-15,inactive
+25,Wendy Zhou,wendy@example.com,+1-555-0125,31,42000.00,Portland,2025-12-01,active
