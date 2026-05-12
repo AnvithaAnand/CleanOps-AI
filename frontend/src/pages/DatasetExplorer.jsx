@@ -122,13 +122,23 @@ export default function DatasetExplorer() {
 }
 
 function OverviewTab({ dataset, trustScore, issues, profile, datasetId }) {
+  const isProcessing = ["uploaded", "profiling", "profiled"].includes(dataset?.status);
+  const displayScore = isProcessing ? null : (trustScore?.overall_score ?? dataset.trust_score);
+
   return (
     <div className="space-y-4">
       <AIInsightPanel datasetId={datasetId} />
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
         {/* Trust score card */}
         <div className="rounded-xl p-6 flex flex-col items-center" style={C.card}>
-          <TrustScoreGauge score={trustScore?.overall_score ?? dataset.trust_score ?? 0} />
+          {isProcessing ? (
+            <div className="flex flex-col items-center justify-center py-8 gap-3">
+              <Loader2 style={{ width: 32, height: 32, color: "var(--accent)" }} className="animate-spin" />
+              <p className="text-xs font-medium" style={C.muted}>Analyzing dataset...</p>
+            </div>
+          ) : (
+            <TrustScoreGauge score={displayScore ?? 0} />
+          )}
           <div className="mt-5 w-full space-y-2.5">
             {trustScore?.dimensions?.map((dim) => (
               <div key={dim.name} className="flex items-center justify-between gap-3">
