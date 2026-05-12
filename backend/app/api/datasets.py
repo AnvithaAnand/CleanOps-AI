@@ -40,27 +40,30 @@ async def _run_repairs_background(dataset_id: str, suggestion_ids: list[str]):
     async with async_session() as db:
         try:
             repair_result = await apply_repairs(dataset_id, suggestion_ids, db)
+            await db.commit()
 
-            result = await db.execute(
-                select(ColumnProfile).where(ColumnProfile.dataset_id == dataset_id)
-            )
-            profiles = result.scalars().all()
-            result = await db.execute(
-                select(DetectedIssue).where(
-                    DetectedIssue.dataset_id == dataset_id,
-                    DetectedIssue.status == "open",
-                )
-            )
-            open_issues = result.scalars().all()
             result = await db.execute(
                 select(Dataset).where(Dataset.id == dataset_id)
             )
             dataset = result.scalar_one()
 
+            df = parse_file(dataset.file_path, dataset.file_type)
+            dataset.row_count = len(df)
+            dataset.column_count = len(df.columns)
+
+            profiles = await profile_dataset(dataset_id, df, db)
+            issues = await detect_issues(dataset_id, df, db)
+            await db.flush()
+
             score = calculate_trust_score(
-                dataset_id, profiles, open_issues, dataset.row_count or 0
+                dataset_id, profiles, issues, dataset.row_count or 0
             )
             dataset.trust_score = score.overall_score
+            dataset.status = "validated"
+            await db.commit()
+
+            await log_action(db, dataset_id, "repair_complete",
+                f"Repairs applied and re-profiled. Trust score: {score.overall_score}")
             await db.commit()
         except Exception as e:
             await db.rollback()

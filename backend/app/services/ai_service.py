@@ -179,7 +179,73 @@ If command is unclear or column doesn't exist, respond:
     if parsed and "understood" in parsed:
         parsed["ai_powered"] = True
         return parsed
+
+    regex_result = _regex_parse_nl(command, columns)
+    if regex_result:
+        return regex_result
+
     return fallback
+
+
+def _regex_parse_nl(command: str, columns: list[str]) -> Optional[dict]:
+    cmd = command.lower().strip()
+
+    def find_col(text):
+        for c in columns:
+            if c.lower() in text:
+                return c
+        return None
+
+    m = re.search(r"fill\s+(?:missing|null|empty)\s+(?:values?\s+(?:in|for)\s+)?(.+?)\s+with\s+(mean|median|mode)", cmd)
+    if m:
+        col = find_col(m.group(1))
+        if col:
+            return {"understood": True, "action": f"{m.group(2)}_imputation", "column": col,
+                    "message": f"Fill missing values in '{col}' with {m.group(2)}.", "confidence": 0.85, "ai_powered": False}
+
+    if re.search(r"(remove|drop|delete)\s+duplicate", cmd):
+        return {"understood": True, "action": "deduplicate", "column": None,
+                "message": "Remove duplicate rows.", "confidence": 0.9, "ai_powered": False}
+
+    m = re.search(r"(?:drop|remove|delete)\s+rows?\s+(?:with\s+)?(?:missing|null|empty)\s+(?:values?\s+(?:in|for)\s+)?(.+)", cmd)
+    if m:
+        col = find_col(m.group(1))
+        if col:
+            return {"understood": True, "action": "drop_rows", "column": col,
+                    "message": f"Drop rows where '{col}' is missing.", "confidence": 0.85, "ai_powered": False}
+
+    m = re.search(r"(?:clip|cap|clamp)\s+outlier.*?(?:in|for|on)\s+(.+)", cmd)
+    if m:
+        col = find_col(m.group(1))
+        if col:
+            return {"understood": True, "action": "clip_outlier", "column": col,
+                    "message": f"Clip outliers in '{col}' using IQR.", "confidence": 0.8, "ai_powered": False}
+
+    m = re.search(r"(?:remove|drop)\s+outlier\s+rows?.*?(?:in|for|on)\s+(.+)", cmd)
+    if m:
+        col = find_col(m.group(1))
+        if col:
+            return {"understood": True, "action": "remove_outlier_rows", "column": col,
+                    "message": f"Remove rows with outlier values in '{col}'.", "confidence": 0.8, "ai_powered": False}
+
+    m = re.search(r"(?:coerce|convert|cast)\s+(.+?)\s+to\s+(?:numeric|number|int|float)", cmd)
+    if m:
+        col = find_col(m.group(1))
+        if col:
+            return {"understood": True, "action": "coerce_type", "column": col,
+                    "message": f"Coerce '{col}' to numeric type.", "confidence": 0.8, "ai_powered": False}
+
+    for col in columns:
+        if col.lower() in cmd:
+            if re.search(r"fill|impute|replace.*missing|fix.*null", cmd):
+                return {"understood": True, "action": "median_imputation", "column": col,
+                        "message": f"Fill missing values in '{col}' with median (inferred).", "confidence": 0.6, "ai_powered": False}
+
+    if re.search(r"fix.*missing|fill.*null|clean.*empty", cmd):
+        return {"understood": True, "action": "median_imputation", "column": None,
+                "message": "Fill missing values with median for all numeric columns (inferred).", "confidence": 0.5, "ai_powered": False}
+
+    return None
 
 
 def generate_cleaning_code(
