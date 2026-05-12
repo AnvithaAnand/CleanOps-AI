@@ -22,7 +22,7 @@ export function useDataset(id) {
     enabled: !!id,
     refetchInterval: (query) => {
       const data = query.state.data;
-      if (data && ["uploaded", "profiling"].includes(data.status)) return 2000;
+      if (data && ["uploaded", "profiling", "profiled"].includes(data.status)) return 2000;
       return false;
     },
   });
