@@ -4,6 +4,7 @@ from app.models.rule import QualityRule
 from app.models.validation import ValidationRun, DetectedIssue
 from app.models.repair import RepairSuggestion, RepairAction
 from app.models.audit import AuditLog
+from app.models.job import Job
 
 __all__ = [
     "Dataset",
@@ -15,4 +16,5 @@ __all__ = [
     "RepairSuggestion",
     "RepairAction",
     "AuditLog",
+    "Job",
 ]

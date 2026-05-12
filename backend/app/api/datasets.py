@@ -32,15 +32,24 @@ from app.services.trust_score import calculate_trust_score
 from app.services.validator import run_validation
 from app.utils.file_utils import detect_file_type, save_upload_file
 from app.models.audit import AuditLog
+from app.services.job_service import create_job, update_job
 
 router = APIRouter(prefix="/api/datasets", tags=["datasets"])
 
 
-async def _run_repairs_background(dataset_id: str, suggestion_ids: list[str]):
+async def _run_repairs_background(dataset_id: str, suggestion_ids: list[str], job_id: str | None = None):
     async with async_session() as db:
         try:
+            if job_id:
+                await update_job(db, job_id, "running", progress=10)
+                await db.commit()
+
             repair_result = await apply_repairs(dataset_id, suggestion_ids, db)
             await db.commit()
+
+            if job_id:
+                await update_job(db, job_id, "running", progress=40)
+                await db.commit()
 
             result = await db.execute(
                 select(Dataset).where(Dataset.id == dataset_id)
@@ -52,6 +61,10 @@ async def _run_repairs_background(dataset_id: str, suggestion_ids: list[str]):
             dataset.column_count = len(df.columns)
 
             profiles = await profile_dataset(dataset_id, df, db)
+            if job_id:
+                await update_job(db, job_id, "running", progress=70)
+                await db.commit()
+
             issues = await detect_issues(dataset_id, df, db)
             await db.flush()
 
@@ -64,15 +77,26 @@ async def _run_repairs_background(dataset_id: str, suggestion_ids: list[str]):
 
             await log_action(db, dataset_id, "repair_complete",
                 f"Repairs applied and re-profiled. Trust score: {score.overall_score}")
+            if job_id:
+                await update_job(db, job_id, "completed", progress=100,
+                    result={"trust_score": score.overall_score, "repairs_applied": repair_result["repairs_applied"]})
             await db.commit()
         except Exception as e:
             await db.rollback()
+            if job_id:
+                async with async_session() as err_db:
+                    await update_job(err_db, job_id, "failed", error=str(e))
+                    await err_db.commit()
             print(f"Background repair failed: {e}")
 
 
-async def _process_dataset(dataset_id: str):
+async def _process_dataset(dataset_id: str, job_id: str | None = None):
     async with async_session() as db:
         try:
+            if job_id:
+                await update_job(db, job_id, "running", progress=5)
+                await db.commit()
+
             result = await db.execute(
                 select(Dataset).where(Dataset.id == dataset_id)
             )
@@ -83,14 +107,21 @@ async def _process_dataset(dataset_id: str):
             df = parse_file(dataset.file_path, dataset.file_type)
             dataset.row_count = len(df)
             dataset.column_count = len(df.columns)
+            if job_id:
+                await update_job(db, job_id, "running", progress=20)
             await db.commit()
 
             profiles = await profile_dataset(dataset_id, df, db)
             dataset.status = "profiled"
+            if job_id:
+                await update_job(db, job_id, "running", progress=50)
             await db.commit()
 
             issues = await detect_issues(dataset_id, df, db)
             await db.flush()
+            if job_id:
+                await update_job(db, job_id, "running", progress=80)
+                await db.commit()
 
             score_resp = calculate_trust_score(
                 dataset_id, profiles, issues, dataset.row_count or 0
@@ -103,11 +134,18 @@ async def _process_dataset(dataset_id: str):
                 db, dataset_id, "profile",
                 f"Profiled {dataset.column_count} columns, detected {len(issues)} issues. Trust score: {score_resp.overall_score}",
             )
+            if job_id:
+                await update_job(db, job_id, "completed", progress=100,
+                    result={"trust_score": score_resp.overall_score, "issues_found": len(issues)})
             await db.commit()
 
         except Exception as e:
             dataset.status = "error"
             await db.commit()
+            if job_id:
+                async with async_session() as err_db:
+                    await update_job(err_db, job_id, "failed", error=str(e))
+                    await err_db.commit()
             raise
 
 
@@ -143,7 +181,10 @@ async def upload_dataset(
         f"Uploaded file '{file.filename}' ({file_size} bytes)",
     )
 
-    background_tasks.add_task(_process_dataset, dataset_id)
+    job = await create_job(db, dataset_id, "profile")
+    await db.flush()
+
+    background_tasks.add_task(_process_dataset, dataset_id, job.id)
 
     return DatasetResponse.model_validate(dataset)
 
@@ -293,11 +334,14 @@ async def apply_dataset_repairs(
     if not result.scalar_one_or_none():
         raise HTTPException(404, "Dataset not found")
 
+    job = await create_job(db, dataset_id, "repair")
+    await db.flush()
+
     background_tasks.add_task(
-        _run_repairs_background, dataset_id, body.suggestion_ids
+        _run_repairs_background, dataset_id, body.suggestion_ids, job.id
     )
 
-    return {"status": "processing", "repairs_queued": len(body.suggestion_ids)}
+    return {"status": "processing", "repairs_queued": len(body.suggestion_ids), "job_id": job.id}
 
 
 @router.get("/{dataset_id}/versions", response_model=list[DatasetVersionResponse])

@@ -2,6 +2,7 @@ import { useLocation, Link, useParams } from "react-router-dom";
 import { Upload, Moon, Sun, Bell } from "lucide-react";
 import { useTheme } from "../../contexts/ThemeContext";
 import { useDataset } from "../../hooks/useDatasets";
+import JobStatusIndicator from "../jobs/JobStatusIndicator";
 
 function DatasetBreadcrumb({ id }) {
   const { data: dataset } = useDataset(id);
@@ -78,6 +79,9 @@ export default function Header() {
             : <Moon style={{ width: 14, height: 14 }} />
           }
         </button>
+
+        {/* Job status */}
+        <JobStatusIndicator />
 
         {/* Bell */}
         <button
