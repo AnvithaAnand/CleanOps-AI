@@ -1,8 +1,11 @@
+import io
 import json
+import uuid
 from typing import Optional
 
 from fastapi import APIRouter, BackgroundTasks, Depends, File, Form, HTTPException, Query, UploadFile
 from fastapi.responses import FileResponse
+from pydantic import BaseModel
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
@@ -24,6 +27,7 @@ from app.schemas.profile import ColumnProfileResponse, ProfileResponse
 from app.schemas.trust_score import TrustScoreResponse
 from app.schemas.validation import IssueResponse, IssuesListResponse, RepairSuggestionResponse, ValidateRequest, ValidationRunResponse
 from app.services.audit_service import log_action
+from app.services.connector_service import import_from_google_sheets, import_from_postgresql, import_from_url
 from app.services.detector import detect_issues
 from app.services.ingestion import parse_file
 from app.services.profiler import profile_dataset
@@ -159,7 +163,6 @@ async def upload_dataset(
     file_type = detect_file_type(file.filename)
     dataset_name = name or file.filename.rsplit(".", 1)[0]
 
-    import uuid
     dataset_id = str(uuid.uuid4())
 
     file_path, file_size = await save_upload_file(file, dataset_id)
@@ -187,6 +190,109 @@ async def upload_dataset(
     background_tasks.add_task(_process_dataset, dataset_id, job.id)
 
     return DatasetResponse.model_validate(dataset)
+
+
+class ImportUrlRequest(BaseModel):
+    url: str
+    name: Optional[str] = None
+
+
+class ImportGoogleSheetsRequest(BaseModel):
+    url: str
+    name: Optional[str] = None
+
+
+class ImportPostgresRequest(BaseModel):
+    host: str
+    port: int = 5432
+    database: str
+    username: str
+    password: str
+    query: str
+    name: Optional[str] = None
+
+
+async def _save_df_as_dataset(df, dataset_name: str, source_label: str, db: AsyncSession,
+                               background_tasks: BackgroundTasks) -> DatasetResponse:
+    """Persist a DataFrame as a new Dataset and kick off profiling."""
+    import os
+    from app.config import settings
+    from app.utils.file_utils import ensure_upload_dir
+
+    dataset_id = str(uuid.uuid4())
+    upload_dir = ensure_upload_dir(dataset_id)
+    file_path = os.path.join(upload_dir, "data.csv")
+    df.to_csv(file_path, index=False)
+    file_size = os.path.getsize(file_path)
+
+    dataset = Dataset(
+        id=dataset_id,
+        name=dataset_name,
+        original_filename=source_label,
+        file_path=file_path,
+        file_type="csv",
+        file_size_bytes=file_size,
+        status="uploaded",
+    )
+    db.add(dataset)
+    await db.flush()
+
+    await log_action(db, dataset_id, "import", f"Imported from {source_label} ({file_size} bytes)")
+
+    job = await create_job(db, dataset_id, "import")
+    await db.flush()
+    await db.commit()
+
+    background_tasks.add_task(_process_dataset, dataset_id, job.id)
+    return DatasetResponse.model_validate(dataset)
+
+
+@router.post("/import/url", response_model=DatasetResponse, status_code=201)
+async def import_from_url_endpoint(
+    body: ImportUrlRequest,
+    background_tasks: BackgroundTasks,
+    db: AsyncSession = Depends(get_db),
+):
+    try:
+        df = await import_from_url(body.url)
+    except Exception as e:
+        raise HTTPException(400, f"Failed to fetch URL: {e}")
+
+    name = body.name or body.url.rstrip("/").split("/")[-1].split("?")[0].rsplit(".", 1)[0] or "imported_dataset"
+    return await _save_df_as_dataset(df, name, body.url, db, background_tasks)
+
+
+@router.post("/import/google-sheets", response_model=DatasetResponse, status_code=201)
+async def import_from_google_sheets_endpoint(
+    body: ImportGoogleSheetsRequest,
+    background_tasks: BackgroundTasks,
+    db: AsyncSession = Depends(get_db),
+):
+    try:
+        df = await import_from_google_sheets(body.url)
+    except Exception as e:
+        raise HTTPException(400, f"Failed to import Google Sheet: {e}")
+
+    name = body.name or "Google Sheet Import"
+    return await _save_df_as_dataset(df, name, body.url, db, background_tasks)
+
+
+@router.post("/import/postgresql", response_model=DatasetResponse, status_code=201)
+async def import_from_postgresql_endpoint(
+    body: ImportPostgresRequest,
+    background_tasks: BackgroundTasks,
+    db: AsyncSession = Depends(get_db),
+):
+    try:
+        df = await import_from_postgresql(
+            body.host, body.port, body.database,
+            body.username, body.password, body.query,
+        )
+    except Exception as e:
+        raise HTTPException(400, f"PostgreSQL import failed: {e}")
+
+    name = body.name or f"{body.database}_import"
+    return await _save_df_as_dataset(df, name, f"postgresql://{body.host}/{body.database}", db, background_tasks)
 
 
 @router.get("/", response_model=list[DatasetListItem])

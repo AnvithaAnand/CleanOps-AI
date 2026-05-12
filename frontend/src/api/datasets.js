@@ -40,3 +40,12 @@ export const downloadDataset = (id, version) =>
 
 export const previewData = (id, rows = 100) =>
   client.get(`/api/datasets/${id}/preview`, { params: { rows } });
+
+export const importFromUrl = (body) =>
+  client.post("/api/datasets/import/url", body);
+
+export const importFromGoogleSheets = (body) =>
+  client.post("/api/datasets/import/google-sheets", body);
+
+export const importFromPostgresql = (body) =>
+  client.post("/api/datasets/import/postgresql", body);

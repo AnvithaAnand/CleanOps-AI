@@ -5,6 +5,7 @@ from app.models.validation import ValidationRun, DetectedIssue
 from app.models.repair import RepairSuggestion, RepairAction
 from app.models.audit import AuditLog
 from app.models.job import Job
+from app.models.connector import SourceConnector
 
 __all__ = [
     "Dataset",
@@ -17,4 +18,5 @@ __all__ = [
     "RepairAction",
     "AuditLog",
     "Job",
+    "SourceConnector",
 ]
