@@ -87,22 +87,10 @@ async def _process_dataset(dataset_id: str):
             await db.commit()
 
             issues = await detect_issues(dataset_id, df, db)
-            await db.commit()
-
-            result = await db.execute(
-                select(ColumnProfile).where(ColumnProfile.dataset_id == dataset_id)
-            )
-            profiles = result.scalars().all()
-            result = await db.execute(
-                select(DetectedIssue).where(
-                    DetectedIssue.dataset_id == dataset_id,
-                    DetectedIssue.status == "open",
-                )
-            )
-            open_issues = result.scalars().all()
+            await db.flush()
 
             score_resp = calculate_trust_score(
-                dataset_id, profiles, open_issues, dataset.row_count or 0
+                dataset_id, profiles, issues, dataset.row_count or 0
             )
             dataset.trust_score = score_resp.overall_score
             dataset.status = "validated"

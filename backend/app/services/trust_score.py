@@ -47,7 +47,7 @@ def _calc_completeness(profiles: list[ColumnProfile]) -> float:
 def _calc_validity(issues: list[DetectedIssue], row_count: int) -> float:
     if row_count == 0:
         return 100.0
-    type_issues = [i for i in issues if i.issue_type == "type_mismatch" and i.status == "open"]
+    type_issues = [i for i in issues if i.issue_type in ("type_mismatch", "missing_value") and i.status == "open"]
     affected = sum(i.affected_count for i in type_issues)
     return round(max(0, 100 - (affected / row_count * 100)), 1)
 
@@ -55,7 +55,7 @@ def _calc_validity(issues: list[DetectedIssue], row_count: int) -> float:
 def _calc_consistency(issues: list[DetectedIssue], row_count: int) -> float:
     if row_count == 0:
         return 100.0
-    pattern_issues = [i for i in issues if "outlier" in i.issue_type and i.status == "open"]
+    pattern_issues = [i for i in issues if i.issue_type in ("outlier", "duplicate_row") and i.status == "open"]
     affected = sum(i.affected_count for i in pattern_issues)
     return round(max(0, 100 - (affected / row_count * 100)), 1)
 
