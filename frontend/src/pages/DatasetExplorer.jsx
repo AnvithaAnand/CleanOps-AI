@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import {
   AlertTriangle, Download, Loader2, Shield,
-  Eye, BarChart3, Bug, Code2, ArrowUpRight, Sparkles, Rows3,
+  Eye, BarChart3, Bug, Code2, ArrowUpRight, Sparkles, Rows3, GitBranch, Activity,
 } from "lucide-react";
 import { useDataset, usePreviewData, useDownloadDataset } from "../hooks/useDatasets";
 import { useProfile } from "../hooks/useProfile";
@@ -13,6 +13,8 @@ import DistributionChart from "../components/charts/DistributionChart";
 import IssueBreakdownChart from "../components/charts/IssueBreakdownChart";
 import AIInsightPanel from "../components/ai/AIInsightPanel";
 import CodeExportModal from "../components/ai/CodeExportModal";
+import LineageGraph from "../components/lineage/LineageGraph";
+import DriftTab from "../components/drift/DriftTab";
 import { formatNumber } from "../lib/utils";
 
 const tabs = [
@@ -20,6 +22,8 @@ const tabs = [
   { id: "data",     label: "Data Preview", icon: Rows3 },
   { id: "columns",  label: "Columns",      icon: BarChart3 },
   { id: "issues",   label: "Issues",       icon: Bug },
+  { id: "lineage",  label: "Lineage",      icon: GitBranch },
+  { id: "drift",    label: "Drift",        icon: Activity },
 ];
 
 const C = {
@@ -115,6 +119,16 @@ export default function DatasetExplorer() {
       {activeTab === "data"     && <DataTab preview={preview} />}
       {activeTab === "columns"  && <ColumnsTab profile={profile} />}
       {activeTab === "issues"   && <IssuesTab issues={issuesData?.issues} datasetId={id} />}
+      {activeTab === "lineage"  && (
+        <div className="space-y-3">
+          <div>
+            <h3 className="text-sm font-semibold" style={{ color: "var(--text-primary)" }}>Data Lineage</h3>
+            <p className="text-xs mt-0.5" style={{ color: "var(--text-muted)" }}>End-to-end flow of ingestion, profiling, issues, and repairs</p>
+          </div>
+          <LineageGraph datasetId={id} />
+        </div>
+      )}
+      {activeTab === "drift"    && <DriftTab datasetId={id} />}
 
       {showCode && <CodeExportModal datasetId={id} onClose={() => setShowCode(false)} />}
     </div>

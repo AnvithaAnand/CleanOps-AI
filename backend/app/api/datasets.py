@@ -29,7 +29,9 @@ from app.schemas.validation import IssueResponse, IssuesListResponse, RepairSugg
 from app.services.audit_service import log_action
 from app.services.connector_service import import_from_google_sheets, import_from_postgresql, import_from_url
 from app.services.detector import detect_issues
+from app.services.drift_service import detect_drift, get_drift_reports, has_baseline, save_baseline
 from app.services.ingestion import parse_file
+from app.services.lineage_service import add_lineage_edge, add_lineage_node, get_lineage_graph
 from app.services.profiler import profile_dataset
 from app.services.repairer import apply_repairs
 from app.services.trust_score import calculate_trust_score
@@ -79,6 +81,15 @@ async def _run_repairs_background(dataset_id: str, suggestion_ids: list[str], jo
             dataset.status = "validated"
             await db.commit()
 
+            # Lineage: repair node linked to most recent issues node
+            repair_node = await add_lineage_node(
+                db, dataset_id, "repair",
+                f"{repair_result.get('repairs_applied', len(suggestion_ids))} repairs applied",
+                entity_id=job_id,
+                metadata={"repairs_applied": repair_result.get("repairs_applied", 0), "trust_score": score.overall_score},
+            )
+            await db.commit()
+
             await log_action(db, dataset_id, "repair_complete",
                 f"Repairs applied and re-profiled. Trust score: {score.overall_score}")
             if job_id:
@@ -108,6 +119,10 @@ async def _process_dataset(dataset_id: str, job_id: str | None = None):
             dataset.status = "profiling"
             await db.commit()
 
+            # Lineage: upload node
+            upload_node = await add_lineage_node(db, dataset_id, "upload", f"Uploaded: {dataset.name}")
+            await db.commit()
+
             df = parse_file(dataset.file_path, dataset.file_type)
             dataset.row_count = len(df)
             dataset.column_count = len(df.columns)
@@ -127,11 +142,35 @@ async def _process_dataset(dataset_id: str, job_id: str | None = None):
                 await update_job(db, job_id, "running", progress=80)
                 await db.commit()
 
+            # Drift: save baseline on first run, detect drift on subsequent runs
+            already_has_baseline = await has_baseline(db, dataset_id)
+            drift_count = 0
+            if already_has_baseline:
+                drift_reports = await detect_drift(db, dataset_id, profiles, dataset.row_count or 0)
+                drift_count = len(drift_reports)
+            else:
+                await save_baseline(db, dataset_id, profiles)
+            await db.commit()
+
             score_resp = calculate_trust_score(
                 dataset_id, profiles, issues, dataset.row_count or 0
             )
             dataset.trust_score = score_resp.overall_score
             dataset.status = "validated"
+            await db.commit()
+
+            # Lineage: profile + issues nodes
+            profile_node = await add_lineage_node(
+                db, dataset_id, "profile", f"Profiled {dataset.column_count} columns",
+                entity_id=job_id,
+                metadata={"trust_score": score_resp.overall_score, "drift_count": drift_count},
+            )
+            await add_lineage_edge(db, upload_node.id, profile_node.id, "processed_by")
+            issues_node = await add_lineage_node(
+                db, dataset_id, "issues", f"{len(issues)} issues detected",
+                metadata={"issue_count": len(issues)},
+            )
+            await add_lineage_edge(db, profile_node.id, issues_node.id, "detected")
             await db.commit()
 
             await log_action(
@@ -599,3 +638,61 @@ async def preview_data(
         rows=preview.to_dict(orient="records"),
         total_rows=len(df),
     )
+
+
+@router.get("/{dataset_id}/lineage")
+async def get_dataset_lineage(
+    dataset_id: str,
+    db: AsyncSession = Depends(get_db),
+):
+    result = await db.execute(select(Dataset).where(Dataset.id == dataset_id))
+    if not result.scalar_one_or_none():
+        raise HTTPException(404, "Dataset not found")
+    return await get_lineage_graph(db, dataset_id)
+
+
+@router.get("/{dataset_id}/drift")
+async def get_dataset_drift(
+    dataset_id: str,
+    db: AsyncSession = Depends(get_db),
+):
+    result = await db.execute(select(Dataset).where(Dataset.id == dataset_id))
+    if not result.scalar_one_or_none():
+        raise HTTPException(404, "Dataset not found")
+    reports = await get_drift_reports(db, dataset_id)
+    return [
+        {
+            "id": r.id,
+            "drift_type": r.drift_type,
+            "severity": r.severity,
+            "column_name": r.column_name,
+            "description": r.description,
+            "baseline_value": r.baseline_value,
+            "current_value": r.current_value,
+            "drift_score": r.drift_score,
+            "created_at": r.created_at.isoformat(),
+        }
+        for r in reports
+    ]
+
+
+@router.post("/{dataset_id}/baseline/reset")
+async def reset_baseline(
+    dataset_id: str,
+    db: AsyncSession = Depends(get_db),
+):
+    result = await db.execute(select(Dataset).where(Dataset.id == dataset_id))
+    dataset = result.scalar_one_or_none()
+    if not dataset:
+        raise HTTPException(404, "Dataset not found")
+
+    result = await db.execute(
+        select(ColumnProfile).where(ColumnProfile.dataset_id == dataset_id)
+    )
+    profiles = result.scalars().all()
+    if not profiles:
+        raise HTTPException(400, "No profiles found — upload and process the dataset first")
+
+    await save_baseline(db, dataset_id, profiles)
+    await db.commit()
+    return {"status": "baseline_reset", "columns": len(profiles)}

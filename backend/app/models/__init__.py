@@ -6,6 +6,8 @@ from app.models.repair import RepairSuggestion, RepairAction
 from app.models.audit import AuditLog
 from app.models.job import Job
 from app.models.connector import SourceConnector
+from app.models.lineage import LineageNode, LineageEdge
+from app.models.drift import ProfileBaseline, DriftReport
 
 __all__ = [
     "Dataset",
@@ -19,4 +21,8 @@ __all__ = [
     "AuditLog",
     "Job",
     "SourceConnector",
+    "LineageNode",
+    "LineageEdge",
+    "ProfileBaseline",
+    "DriftReport",
 ]
