@@ -10,6 +10,7 @@ from app.models.lineage import LineageNode, LineageEdge
 from app.models.drift import ProfileBaseline, DriftReport
 from app.models.alert import AlertRule, Alert
 from app.models.contract import DataContract
+from app.models.user import User
 
 __all__ = [
     "Dataset",
@@ -30,4 +31,5 @@ __all__ = [
     "AlertRule",
     "Alert",
     "DataContract",
+    "User",
 ]

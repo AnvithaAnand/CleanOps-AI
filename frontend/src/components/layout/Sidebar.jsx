@@ -1,7 +1,8 @@
-import { NavLink } from "react-router-dom";
-import { LayoutDashboard, Upload, ShieldCheck, Sparkles, Database, Activity, ChevronRight, Bell } from "lucide-react";
+import { NavLink, useNavigate } from "react-router-dom";
+import { LayoutDashboard, Upload, ShieldCheck, Sparkles, Database, Activity, ChevronRight, Bell, Users, LogOut } from "lucide-react";
 import { useTheme } from "../../contexts/ThemeContext";
 import { useUnreadCount } from "../../hooks/useAlerts";
+import { useAuth } from "../../contexts/AuthContext";
 
 const links = [
   { to: "/",        icon: LayoutDashboard, label: "Dashboard",     end: true },
@@ -14,6 +15,10 @@ export default function Sidebar() {
   const { theme } = useTheme();
   const isDark = theme === "dark";
   const { data: unreadAlerts = 0 } = useUnreadCount();
+  const { user, logout, isAdmin } = useAuth();
+  const navigate = useNavigate();
+
+  const handleLogout = () => { logout(); navigate("/login"); };
 
   return (
     <aside
@@ -105,8 +110,57 @@ export default function Sidebar() {
         ))}
       </nav>
 
+        {/* Admin: Users link */}
+        {isAdmin && (
+          <NavLink
+            to="/users"
+            end={false}
+            style={({ isActive }) => ({
+              display: "flex", alignItems: "center", gap: "0.75rem",
+              padding: "0.625rem 0.75rem", borderRadius: "0.5rem",
+              fontSize: "0.875rem", fontWeight: 500, transition: "all 0.15s ease",
+              textDecoration: "none",
+              borderLeft: isActive ? `2px solid var(--accent)` : "2px solid transparent",
+              background: isActive ? "var(--accent-bg)" : "transparent",
+              color: isActive ? "var(--accent-light)" : "var(--text-muted)",
+            })}
+            onMouseEnter={(e) => { if (!e.currentTarget.style.background.includes("accent-bg")) { e.currentTarget.style.background = "var(--bg-hover)"; e.currentTarget.style.color = "var(--text-primary)"; }}}
+            onMouseLeave={(e) => { if (e.currentTarget.getAttribute("aria-current") !== "page") { e.currentTarget.style.background = "transparent"; e.currentTarget.style.color = "var(--text-muted)"; }}}
+          >
+            {({ isActive }) => (
+              <>
+                <Users style={{ width: 15, height: 15, flexShrink: 0, color: isActive ? "var(--accent-light)" : "var(--text-faint)" }} />
+                <span className="flex-1">Users</span>
+                {isActive && <ChevronRight style={{ width: 12, height: 12, color: "var(--accent)" }} />}
+              </>
+            )}
+          </NavLink>
+        )}
+
       {/* Footer */}
       <div className="px-4 py-4" style={{ borderTop: `1px solid var(--border)` }}>
+        {/* User info */}
+        {user && (
+          <div className="flex items-center gap-2 mb-3 px-1">
+            <div
+              className="w-7 h-7 rounded-lg flex items-center justify-center text-xs font-bold flex-shrink-0"
+              style={{ background: "var(--accent-bg)", color: "var(--accent)" }}
+            >
+              {user.full_name?.[0]?.toUpperCase() || "?"}
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-xs font-medium truncate" style={{ color: "var(--text-primary)" }}>{user.full_name}</p>
+              <p className="text-[10px] capitalize" style={{ color: "var(--text-faint)" }}>{user.role}</p>
+            </div>
+            <button onClick={handleLogout} title="Sign out"
+              style={{ color: "var(--text-faint)" }}
+              onMouseEnter={(e) => e.currentTarget.style.color = "var(--danger)"}
+              onMouseLeave={(e) => e.currentTarget.style.color = "var(--text-faint)"}
+            >
+              <LogOut style={{ width: 14, height: 14 }} />
+            </button>
+          </div>
+        )}
         <div
           className="rounded-lg px-3 py-2.5 flex items-center gap-2"
           style={{ background: "var(--accent-bg)", border: `1px solid var(--accent-border)` }}

@@ -7,6 +7,9 @@ class Settings(BaseSettings):
     GEMINI_API_KEY: str = ""
     CORS_ORIGINS: str = "http://localhost:5173"
     MAX_UPLOAD_SIZE_MB: int = 200
+    JWT_SECRET_KEY: str = "changeme-use-a-real-secret-in-production"
+    JWT_ALGORITHM: str = "HS256"
+    JWT_EXPIRY_HOURS: int = 72
 
     model_config = {"env_file": ".env", "env_file_encoding": "utf-8"}
 
