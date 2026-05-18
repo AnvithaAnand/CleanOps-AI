@@ -6,6 +6,7 @@ import DatasetExplorer from "./pages/DatasetExplorer";
 import IssuesPage from "./pages/IssuesPage";
 import RuleBuilder from "./pages/RuleBuilder";
 import AuditReport from "./pages/AuditReport";
+import AlertsPage from "./pages/AlertsPage";
 
 export const router = createBrowserRouter([
   {
@@ -18,6 +19,7 @@ export const router = createBrowserRouter([
       { path: "dataset/:id/issues", element: <IssuesPage /> },
       { path: "dataset/:id/audit", element: <AuditReport /> },
       { path: "rules", element: <RuleBuilder /> },
+      { path: "alerts", element: <AlertsPage /> },
     ],
   },
 ]);

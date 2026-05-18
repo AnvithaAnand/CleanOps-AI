@@ -1,8 +1,9 @@
 import { useLocation, Link, useParams } from "react-router-dom";
-import { Upload, Moon, Sun, Bell } from "lucide-react";
+import { Upload, Moon, Sun } from "lucide-react";
 import { useTheme } from "../../contexts/ThemeContext";
 import { useDataset } from "../../hooks/useDatasets";
 import JobStatusIndicator from "../jobs/JobStatusIndicator";
+import AlertBell from "../alerts/AlertBell";
 
 function DatasetBreadcrumb({ id }) {
   const { data: dataset } = useDataset(id);
@@ -19,9 +20,10 @@ function DatasetBreadcrumb({ id }) {
 }
 
 const staticTitles = {
-  "/":       { title: "Dashboard",       sub: "Overview of your data reliability" },
-  "/upload": { title: "Upload Dataset",  sub: "Import CSV, XLSX, or Parquet files" },
-  "/rules":  { title: "Quality Rules",   sub: "Define and manage validation rules" },
+  "/":        { title: "Dashboard",       sub: "Overview of your data reliability" },
+  "/upload":  { title: "Upload Dataset",  sub: "Import CSV, XLSX, or Parquet files" },
+  "/rules":   { title: "Quality Rules",   sub: "Define and manage validation rules" },
+  "/alerts":  { title: "Alerts",          sub: "Quality signals and rule management" },
 };
 
 export default function Header() {
@@ -83,13 +85,8 @@ export default function Header() {
         {/* Job status */}
         <JobStatusIndicator />
 
-        {/* Bell */}
-        <button
-          className="w-8 h-8 flex items-center justify-center rounded-lg transition-all"
-          style={{ background: "var(--bg-hover)", border: `1px solid var(--border)`, color: "var(--text-muted)" }}
-        >
-          <Bell style={{ width: 14, height: 14 }} />
-        </button>
+        {/* Alerts bell */}
+        <AlertBell />
 
         {/* Upload CTA */}
         <Link

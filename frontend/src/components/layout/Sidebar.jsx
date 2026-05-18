@@ -1,16 +1,19 @@
 import { NavLink } from "react-router-dom";
-import { LayoutDashboard, Upload, ShieldCheck, Sparkles, Database, Activity, ChevronRight } from "lucide-react";
+import { LayoutDashboard, Upload, ShieldCheck, Sparkles, Database, Activity, ChevronRight, Bell } from "lucide-react";
 import { useTheme } from "../../contexts/ThemeContext";
+import { useUnreadCount } from "../../hooks/useAlerts";
 
 const links = [
-  { to: "/",       icon: LayoutDashboard, label: "Dashboard",     end: true },
-  { to: "/upload", icon: Upload,          label: "Upload Dataset", end: false },
-  { to: "/rules",  icon: ShieldCheck,     label: "Quality Rules",  end: false },
+  { to: "/",        icon: LayoutDashboard, label: "Dashboard",     end: true },
+  { to: "/upload",  icon: Upload,          label: "Upload Dataset", end: false },
+  { to: "/rules",   icon: ShieldCheck,     label: "Quality Rules",  end: false },
+  { to: "/alerts",  icon: Bell,            label: "Alerts",         end: false, badge: true },
 ];
 
 export default function Sidebar() {
   const { theme } = useTheme();
   const isDark = theme === "dark";
+  const { data: unreadAlerts = 0 } = useUnreadCount();
 
   return (
     <aside
@@ -52,7 +55,7 @@ export default function Sidebar() {
         >
           Navigation
         </p>
-        {links.map(({ to, icon: Icon, label, end }) => (
+        {links.map(({ to, icon: Icon, label, end, badge }) => (
           <NavLink
             key={to}
             to={to}
@@ -70,7 +73,6 @@ export default function Sidebar() {
               borderLeft: isActive ? `2px solid var(--accent)` : "2px solid transparent",
               background: isActive ? "var(--accent-bg)" : "transparent",
               color: isActive ? "var(--accent-light)" : "var(--text-muted)",
-              marginLeft: isActive ? 0 : 0,
             })}
             onMouseEnter={(e) => {
               if (!e.currentTarget.style.background.includes("accent-bg")) {
@@ -90,6 +92,12 @@ export default function Sidebar() {
               <>
                 <Icon style={{ width: 15, height: 15, flexShrink: 0, color: isActive ? "var(--accent-light)" : "var(--text-faint)" }} />
                 <span className="flex-1">{label}</span>
+                {badge && unreadAlerts > 0 && (
+                  <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-full text-white"
+                    style={{ background: "#ef4444" }}>
+                    {unreadAlerts > 9 ? "9+" : unreadAlerts}
+                  </span>
+                )}
                 {isActive && <ChevronRight style={{ width: 12, height: 12, color: "var(--accent)" }} />}
               </>
             )}
@@ -104,7 +112,7 @@ export default function Sidebar() {
           style={{ background: "var(--accent-bg)", border: `1px solid var(--accent-border)` }}
         >
           <Activity style={{ width: 11, height: 11, color: "var(--success)" }} />
-          <span className="text-xs" style={{ color: "var(--text-muted)" }}>v1.0 · Phase 2</span>
+          <span className="text-xs" style={{ color: "var(--text-muted)" }}>v1.0 · Phase 3</span>
           <span
             className="ml-auto text-[10px] font-bold px-1.5 py-0.5 rounded"
             style={{ background: "rgba(16,185,129,0.15)", color: "var(--success)" }}

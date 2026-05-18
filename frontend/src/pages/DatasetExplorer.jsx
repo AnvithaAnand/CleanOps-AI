@@ -15,15 +15,17 @@ import AIInsightPanel from "../components/ai/AIInsightPanel";
 import CodeExportModal from "../components/ai/CodeExportModal";
 import LineageGraph from "../components/lineage/LineageGraph";
 import DriftTab from "../components/drift/DriftTab";
+import ContractTab from "../components/contracts/ContractTab";
 import { formatNumber } from "../lib/utils";
 
 const tabs = [
-  { id: "overview", label: "Overview",     icon: Eye },
-  { id: "data",     label: "Data Preview", icon: Rows3 },
-  { id: "columns",  label: "Columns",      icon: BarChart3 },
-  { id: "issues",   label: "Issues",       icon: Bug },
-  { id: "lineage",  label: "Lineage",      icon: GitBranch },
-  { id: "drift",    label: "Drift",        icon: Activity },
+  { id: "overview",  label: "Overview",      icon: Eye },
+  { id: "data",      label: "Data Preview",  icon: Rows3 },
+  { id: "columns",   label: "Columns",       icon: BarChart3 },
+  { id: "issues",    label: "Issues",        icon: Bug },
+  { id: "lineage",   label: "Lineage",       icon: GitBranch },
+  { id: "drift",     label: "Drift",         icon: Activity },
+  { id: "contract",  label: "Contract",      icon: Code2 },
 ];
 
 const C = {
@@ -129,6 +131,7 @@ export default function DatasetExplorer() {
         </div>
       )}
       {activeTab === "drift"    && <DriftTab datasetId={id} />}
+      {activeTab === "contract" && <ContractTab datasetId={id} />}
 
       {showCode && <CodeExportModal datasetId={id} onClose={() => setShowCode(false)} />}
     </div>

@@ -8,6 +8,8 @@ from app.models.job import Job
 from app.models.connector import SourceConnector
 from app.models.lineage import LineageNode, LineageEdge
 from app.models.drift import ProfileBaseline, DriftReport
+from app.models.alert import AlertRule, Alert
+from app.models.contract import DataContract
 
 __all__ = [
     "Dataset",
@@ -25,4 +27,7 @@ __all__ = [
     "LineageEdge",
     "ProfileBaseline",
     "DriftReport",
+    "AlertRule",
+    "Alert",
+    "DataContract",
 ]

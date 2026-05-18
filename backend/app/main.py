@@ -6,7 +6,8 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from app.api.router import api_router
 from app.config import settings
-from app.database import Base, engine
+from app.database import Base, async_session, engine
+from app.services.alert_service import seed_default_rules
 
 
 @asynccontextmanager
@@ -14,6 +15,9 @@ async def lifespan(app: FastAPI):
     os.makedirs(settings.UPLOAD_DIR, exist_ok=True)
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
+    async with async_session() as db:
+        await seed_default_rules(db)
+        await db.commit()
     yield
 
 

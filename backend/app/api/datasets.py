@@ -26,6 +26,8 @@ from app.schemas.dataset import (
 from app.schemas.profile import ColumnProfileResponse, ProfileResponse
 from app.schemas.trust_score import TrustScoreResponse
 from app.schemas.validation import IssueResponse, IssuesListResponse, RepairSuggestionResponse, ValidateRequest, ValidationRunResponse
+from app.services.alert_service import create_alert, evaluate_alert_rules
+from app.services.contract_service import validate_contract
 from app.services.audit_service import log_action
 from app.services.connector_service import import_from_google_sheets, import_from_postgresql, import_from_url
 from app.services.detector import detect_issues
@@ -171,6 +173,14 @@ async def _process_dataset(dataset_id: str, job_id: str | None = None):
                 metadata={"issue_count": len(issues)},
             )
             await add_lineage_edge(db, profile_node.id, issues_node.id, "detected")
+            await db.commit()
+
+            # Alerts + Contract validation
+            drift_list = drift_reports if already_has_baseline else []
+            await evaluate_alert_rules(db, dataset_id, score_resp.overall_score,
+                                        len(issues), profiles, drift_list)
+            await validate_contract(db, dataset_id, score_resp.overall_score,
+                                     profiles, dataset.row_count or 0)
             await db.commit()
 
             await log_action(
