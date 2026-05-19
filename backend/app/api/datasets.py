@@ -41,6 +41,7 @@ from app.services.validator import run_validation
 from app.utils.file_utils import detect_file_type, save_upload_file
 from app.models.audit import AuditLog
 from app.services.job_service import create_job, update_job
+from app.services.webhook_service import fire_webhooks
 
 router = APIRouter(prefix="/api/datasets", tags=["datasets"])
 
@@ -191,6 +192,14 @@ async def _process_dataset(dataset_id: str, job_id: str | None = None):
                 await update_job(db, job_id, "completed", progress=100,
                     result={"trust_score": score_resp.overall_score, "issues_found": len(issues)})
             await db.commit()
+
+            await fire_webhooks(db, "scan.completed", {
+                "dataset_id": dataset_id,
+                "dataset_name": dataset.name,
+                "trust_score": score_resp.overall_score,
+                "issues_found": len(issues),
+                "drift_detected": drift_count > 0,
+            })
 
         except Exception as e:
             dataset.status = "error"

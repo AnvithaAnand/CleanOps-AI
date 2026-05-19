@@ -4,6 +4,7 @@ from app.models.alert import Alert, AlertRule
 from app.models.drift import DriftReport
 from app.models.profile import ColumnProfile
 from app.models.validation import DetectedIssue
+from app.services.webhook_service import fire_webhooks
 
 
 async def create_alert(db: AsyncSession, dataset_id: str | None, alert_type: str,
@@ -17,6 +18,13 @@ async def create_alert(db: AsyncSession, dataset_id: str | None, alert_type: str
     )
     db.add(alert)
     await db.flush()
+    await fire_webhooks(db, "alert.fired", {
+        "dataset_id": dataset_id,
+        "alert_type": alert_type,
+        "severity": severity,
+        "title": title,
+        "message": message,
+    })
     return alert
 
 

@@ -12,6 +12,7 @@ from app.models.alert import AlertRule, Alert
 from app.models.contract import DataContract
 from app.models.user import User
 from app.models.schedule import ScanSchedule
+from app.models.webhook import WebhookEndpoint
 
 __all__ = [
     "Dataset",
@@ -34,4 +35,5 @@ __all__ = [
     "DataContract",
     "User",
     "ScanSchedule",
+    "WebhookEndpoint",
 ]

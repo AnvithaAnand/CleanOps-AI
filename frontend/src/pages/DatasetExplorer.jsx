@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import {
   AlertTriangle, Download, Loader2, Shield,
-  Eye, BarChart3, Bug, Code2, ArrowUpRight, Sparkles, Rows3, GitBranch, Activity, Clock,
+  Eye, BarChart3, Bug, Code2, ArrowUpRight, Sparkles, Rows3, GitBranch, Activity, Clock, Zap,
 } from "lucide-react";
 import { useDataset, usePreviewData, useDownloadDataset } from "../hooks/useDatasets";
 import { useProfile } from "../hooks/useProfile";
@@ -17,6 +17,7 @@ import LineageGraph from "../components/lineage/LineageGraph";
 import DriftTab from "../components/drift/DriftTab";
 import ContractTab from "../components/contracts/ContractTab";
 import ScheduleTab from "../components/schedule/ScheduleTab";
+import PipelineTab from "../components/pipeline/PipelineTab";
 import { formatNumber } from "../lib/utils";
 
 const tabs = [
@@ -28,6 +29,7 @@ const tabs = [
   { id: "drift",     label: "Drift",         icon: Activity },
   { id: "contract",  label: "Contract",      icon: Code2 },
   { id: "schedule",  label: "Schedule",      icon: Clock },
+  { id: "pipeline",  label: "Pipeline",      icon: Zap },
 ];
 
 const C = {
@@ -135,6 +137,7 @@ export default function DatasetExplorer() {
       {activeTab === "drift"    && <DriftTab datasetId={id} />}
       {activeTab === "contract" && <ContractTab datasetId={id} />}
       {activeTab === "schedule" && <ScheduleTab datasetId={id} />}
+      {activeTab === "pipeline" && <PipelineTab datasetId={id} />}
 
       {showCode && <CodeExportModal datasetId={id} onClose={() => setShowCode(false)} />}
     </div>
