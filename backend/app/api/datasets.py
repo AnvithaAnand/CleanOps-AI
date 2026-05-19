@@ -686,6 +686,25 @@ async def get_dataset_drift(
     ]
 
 
+@router.delete("/{dataset_id}", status_code=204)
+async def delete_dataset(
+    dataset_id: str,
+    db: AsyncSession = Depends(get_db),
+):
+    result = await db.execute(select(Dataset).where(Dataset.id == dataset_id))
+    dataset = result.scalar_one_or_none()
+    if not dataset:
+        raise HTTPException(404, "Dataset not found")
+    import os
+    if dataset.file_path and os.path.exists(dataset.file_path):
+        try:
+            os.remove(dataset.file_path)
+        except OSError:
+            pass
+    await db.delete(dataset)
+    await db.commit()
+
+
 @router.post("/{dataset_id}/baseline/reset")
 async def reset_baseline(
     dataset_id: str,

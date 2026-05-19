@@ -49,3 +49,6 @@ export const importFromGoogleSheets = (body) =>
 
 export const importFromPostgresql = (body) =>
   client.post("/api/datasets/import/postgresql", body);
+
+export const deleteDataset = (id) =>
+  client.delete(`/api/datasets/${id}`);

@@ -1,3 +1,4 @@
+import asyncio
 import os
 from contextlib import asynccontextmanager
 
@@ -8,6 +9,7 @@ from app.api.router import api_router
 from app.config import settings
 from app.database import Base, async_session, engine
 from app.services.alert_service import seed_default_rules
+from app.services.scheduler_service import scheduler_loop
 
 
 @asynccontextmanager
@@ -18,7 +20,9 @@ async def lifespan(app: FastAPI):
     async with async_session() as db:
         await seed_default_rules(db)
         await db.commit()
+    task = asyncio.create_task(scheduler_loop())
     yield
+    task.cancel()
 
 
 app = FastAPI(

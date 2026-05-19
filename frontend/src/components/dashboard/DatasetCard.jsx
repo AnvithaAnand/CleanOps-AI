@@ -1,7 +1,10 @@
+import { useState } from "react";
 import { Link } from "react-router-dom";
-import { FileSpreadsheet, Rows3, Columns3, Clock, AlertTriangle } from "lucide-react";
+import { FileSpreadsheet, Rows3, Columns3, Clock, AlertTriangle, Trash2 } from "lucide-react";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import TrustScoreBadge from "./TrustScoreBadge";
 import { formatDate, formatNumber } from "../../lib/utils";
+import { deleteDataset } from "../../api/datasets";
 
 const statusConfig = {
   uploaded: { color: "var(--text-muted)",   bg: "var(--bg-hover)", label: "Uploaded" },
@@ -14,11 +17,31 @@ const statusConfig = {
 export default function DatasetCard({ dataset }) {
   const status = statusConfig[dataset.status] || statusConfig.uploaded;
   const isProcessing = ["uploaded", "profiling"].includes(dataset.status);
+  const [confirming, setConfirming] = useState(false);
+  const qc = useQueryClient();
+
+  const deleteMutation = useMutation({
+    mutationFn: () => deleteDataset(dataset.id),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["datasets"] }),
+  });
+
+  const handleDelete = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (!confirming) { setConfirming(true); return; }
+    deleteMutation.mutate();
+  };
+
+  const handleCancelDelete = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setConfirming(false);
+  };
 
   return (
     <Link
       to={`/dataset/${dataset.id}`}
-      className="block rounded-xl p-5 transition-all duration-200 group"
+      className="block rounded-xl p-5 transition-all duration-200 group relative"
       style={{ background: "var(--bg-card)", border: `1px solid var(--border)`, textDecoration: "none" }}
       onMouseEnter={(e) => {
         e.currentTarget.style.borderColor = "var(--border-strong)";
@@ -29,6 +52,7 @@ export default function DatasetCard({ dataset }) {
         e.currentTarget.style.borderColor = "var(--border)";
         e.currentTarget.style.transform = "translateY(0)";
         e.currentTarget.style.boxShadow = "none";
+        setConfirming(false);
       }}
     >
       {/* Top */}
@@ -85,12 +109,44 @@ export default function DatasetCard({ dataset }) {
             {dataset.file_type}
           </span>
         </div>
-        {dataset.trust_score != null && dataset.trust_score < 80 && (
-          <div className="flex items-center gap-1">
-            <AlertTriangle style={{ width: 11, height: 11, color: "var(--warning)" }} />
-            <span className="text-[11px]" style={{ color: "var(--warning)" }}>Needs attention</span>
-          </div>
-        )}
+        <div className="flex items-center gap-2">
+          {dataset.trust_score != null && dataset.trust_score < 80 && !confirming && (
+            <div className="flex items-center gap-1">
+              <AlertTriangle style={{ width: 11, height: 11, color: "var(--warning)" }} />
+              <span className="text-[11px]" style={{ color: "var(--warning)" }}>Needs attention</span>
+            </div>
+          )}
+          {confirming ? (
+            <div className="flex items-center gap-1.5" onClick={(e) => e.preventDefault()}>
+              <span className="text-[11px]" style={{ color: "var(--danger)" }}>Delete?</span>
+              <button
+                onClick={handleDelete}
+                className="text-[11px] font-semibold px-2 py-0.5 rounded"
+                style={{ background: "rgba(239,68,68,0.15)", color: "var(--danger)" }}
+              >
+                Yes
+              </button>
+              <button
+                onClick={handleCancelDelete}
+                className="text-[11px] font-semibold px-2 py-0.5 rounded"
+                style={{ background: "var(--bg-hover)", color: "var(--text-muted)" }}
+              >
+                No
+              </button>
+            </div>
+          ) : (
+            <button
+              onClick={handleDelete}
+              title="Delete dataset"
+              className="opacity-0 group-hover:opacity-100 w-6 h-6 flex items-center justify-center rounded transition-all"
+              style={{ color: "var(--text-faint)" }}
+              onMouseEnter={(e) => { e.currentTarget.style.color = "var(--danger)"; e.currentTarget.style.background = "rgba(239,68,68,0.1)"; }}
+              onMouseLeave={(e) => { e.currentTarget.style.color = "var(--text-faint)"; e.currentTarget.style.background = "transparent"; }}
+            >
+              <Trash2 style={{ width: 12, height: 12 }} />
+            </button>
+          )}
+        </div>
       </div>
     </Link>
   );

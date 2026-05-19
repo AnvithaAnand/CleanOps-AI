@@ -11,6 +11,7 @@ from app.models.drift import ProfileBaseline, DriftReport
 from app.models.alert import AlertRule, Alert
 from app.models.contract import DataContract
 from app.models.user import User
+from app.models.schedule import ScanSchedule
 
 __all__ = [
     "Dataset",
@@ -32,4 +33,5 @@ __all__ = [
     "Alert",
     "DataContract",
     "User",
+    "ScanSchedule",
 ]
