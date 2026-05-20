@@ -358,11 +358,17 @@ async def list_datasets(
     skip: int = Query(0, ge=0),
     limit: int = Query(20, ge=1, le=100),
     status: Optional[str] = Query(None),
+    search: Optional[str] = Query(None),
+    tag: Optional[str] = Query(None),
     db: AsyncSession = Depends(get_db),
 ):
     query = select(Dataset).order_by(Dataset.created_at.desc())
     if status:
         query = query.where(Dataset.status == status)
+    if search:
+        query = query.where(Dataset.name.ilike(f"%{search}%"))
+    if tag:
+        query = query.where(Dataset.tags.ilike(f'%"{tag}"%'))
     query = query.offset(skip).limit(limit)
 
     result = await db.execute(query)
@@ -382,6 +388,30 @@ async def get_dataset(
     if not dataset:
         raise HTTPException(404, "Dataset not found")
     return DatasetResponse.model_validate(dataset)
+
+
+class CatalogUpdate(BaseModel):
+    description: Optional[str] = None
+    tags: Optional[list[str]] = None
+
+
+@router.patch("/{dataset_id}/catalog")
+async def update_catalog(dataset_id: str, body: CatalogUpdate, db: AsyncSession = Depends(get_db)):
+    import json as _json
+    result = await db.execute(select(Dataset).where(Dataset.id == dataset_id))
+    dataset = result.scalar_one_or_none()
+    if not dataset:
+        raise HTTPException(404, "Dataset not found")
+    if body.description is not None:
+        dataset.description = body.description
+    if body.tags is not None:
+        dataset.tags = _json.dumps(body.tags)
+    await db.commit()
+    return {
+        "id": dataset.id,
+        "description": dataset.description,
+        "tags": _json.loads(dataset.tags or "[]"),
+    }
 
 
 @router.get("/{dataset_id}/profile", response_model=ProfileResponse)
@@ -598,6 +628,37 @@ async def validate_dataset(
     run = await run_validation(dataset_id, df, db, rule_ids)
 
     return ValidationRunResponse.model_validate(run)
+
+
+@router.get("/{dataset_id}/report")
+async def export_report(
+    dataset_id: str,
+    format: str = Query("excel", pattern="^(excel|pdf)$"),
+    db: AsyncSession = Depends(get_db),
+):
+    from app.services.report_service import generate_excel_report, generate_pdf_report
+    from fastapi.responses import Response
+
+    result = await db.execute(select(Dataset).where(Dataset.id == dataset_id))
+    dataset = result.scalar_one_or_none()
+    if not dataset:
+        raise HTTPException(404, "Dataset not found")
+
+    safe_name = dataset.name.replace(" ", "_")[:40]
+    if format == "pdf":
+        data = await generate_pdf_report(db, dataset_id)
+        return Response(
+            content=data,
+            media_type="application/pdf",
+            headers={"Content-Disposition": f'attachment; filename="{safe_name}_report.pdf"'},
+        )
+    else:
+        data = await generate_excel_report(db, dataset_id)
+        return Response(
+            content=data,
+            media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            headers={"Content-Disposition": f'attachment; filename="{safe_name}_report.xlsx"'},
+        )
 
 
 @router.get("/{dataset_id}/download")

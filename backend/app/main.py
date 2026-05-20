@@ -12,11 +12,22 @@ from app.services.alert_service import seed_default_rules
 from app.services.scheduler_service import scheduler_loop
 
 
+async def _migrate(conn):
+    from sqlalchemy import inspect, text
+    inspector = inspect(conn)
+    existing = {c["name"] for c in inspector.get_columns("datasets")}
+    if "description" not in existing:
+        await conn.execute(text("ALTER TABLE datasets ADD COLUMN description TEXT"))
+    if "tags" not in existing:
+        await conn.execute(text("ALTER TABLE datasets ADD COLUMN tags TEXT DEFAULT '[]'"))
+
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     os.makedirs(settings.UPLOAD_DIR, exist_ok=True)
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
+        await conn.run_sync(_migrate)
     async with async_session() as db:
         await seed_default_rules(db)
         await db.commit()

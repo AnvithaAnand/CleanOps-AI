@@ -2,7 +2,7 @@ import uuid
 from datetime import datetime
 from typing import Optional
 
-from sqlalchemy import BigInteger, DateTime, Float, ForeignKey, Integer, String, func
+from sqlalchemy import BigInteger, DateTime, Float, ForeignKey, Integer, String, Text, func
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.database import Base
@@ -23,6 +23,8 @@ class Dataset(Base):
     column_count: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)
     status: Mapped[str] = mapped_column(String(20), nullable=False, default="uploaded")
     trust_score: Mapped[Optional[float]] = mapped_column(Float, nullable=True)
+    description: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    tags: Mapped[Optional[str]] = mapped_column(Text, nullable=True, default="[]")  # JSON array
     created_at: Mapped[datetime] = mapped_column(
         DateTime, nullable=False, server_default=func.now()
     )

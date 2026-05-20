@@ -6,7 +6,20 @@ import {
   applyRepairs,
   downloadDataset,
   previewData,
+  deleteDataset,
 } from "../api/datasets";
+import client from "../api/client";
+
+export function useUpdateCatalog(datasetId) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (body) => client.patch(`/api/datasets/${datasetId}/catalog`, body).then((r) => r.data),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["datasets"] });
+      qc.invalidateQueries({ queryKey: ["dataset", datasetId] });
+    },
+  });
+}
 
 export function useDatasets(params) {
   return useQuery({

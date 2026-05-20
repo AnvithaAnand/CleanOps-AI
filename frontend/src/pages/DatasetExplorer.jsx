@@ -100,6 +100,7 @@ export default function DatasetExplorer() {
             style={{ background: "var(--bg-hover)", color: "var(--text-secondary)", border: "1px solid var(--border)" }}>
             <Download style={{ width: 12, height: 12 }} />Download
           </button>
+          <ExportReportButton datasetId={dataset.id} datasetName={dataset.name} />
         </div>
       </div>
 
@@ -366,6 +367,65 @@ function IssuesTab({ issues, datasetId }) {
           </div>
         </div>
       ))}
+    </div>
+  );
+}
+
+function ExportReportButton({ datasetId, datasetName }) {
+  const [open, setOpen] = useState(false);
+  const [loading, setLoading] = useState(null);
+
+  const download = async (format) => {
+    setLoading(format);
+    try {
+      const res = await fetch(
+        `/api/datasets/${datasetId}/report?format=${format}`,
+        { headers: { Authorization: `Bearer ${localStorage.getItem("cleanops_token")}` } }
+      );
+      if (!res.ok) throw new Error("Export failed");
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `${datasetName.replace(/\s+/g, "_")}_report.${format === "pdf" ? "pdf" : "xlsx"}`;
+      a.click();
+      URL.revokeObjectURL(url);
+    } finally {
+      setLoading(null);
+      setOpen(false);
+    }
+  };
+
+  return (
+    <div className="relative">
+      <button
+        onClick={() => setOpen((v) => !v)}
+        className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium"
+        style={{ background: "var(--bg-hover)", color: "var(--text-secondary)", border: "1px solid var(--border)" }}
+      >
+        <Download style={{ width: 12, height: 12 }} />
+        Export Report
+      </button>
+      {open && (
+        <div
+          className="absolute right-0 top-9 rounded-xl shadow-xl z-50 overflow-hidden min-w-[140px]"
+          style={{ background: "var(--bg-card)", border: "1px solid var(--border)" }}
+        >
+          {[{ fmt: "excel", label: "Excel (.xlsx)" }, { fmt: "pdf", label: "PDF" }].map(({ fmt, label }) => (
+            <button
+              key={fmt}
+              onClick={() => download(fmt)}
+              disabled={!!loading}
+              className="w-full text-left px-4 py-2.5 text-xs font-medium transition-all"
+              style={{ color: "var(--text-primary)" }}
+              onMouseEnter={(e) => e.currentTarget.style.background = "var(--bg-hover)"}
+              onMouseLeave={(e) => e.currentTarget.style.background = "transparent"}
+            >
+              {loading === fmt ? "Downloading..." : label}
+            </button>
+          ))}
+        </div>
+      )}
     </div>
   );
 }

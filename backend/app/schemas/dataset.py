@@ -29,6 +29,8 @@ class DatasetListItem(BaseModel):
     column_count: Optional[int] = None
     status: str
     trust_score: Optional[float] = None
+    description: Optional[str] = None
+    tags: Optional[str] = None  # JSON string, parsed on frontend
     created_at: datetime
 
     model_config = {"from_attributes": True}
