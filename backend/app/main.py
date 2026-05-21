@@ -12,14 +12,16 @@ from app.services.alert_service import seed_default_rules
 from app.services.scheduler_service import scheduler_loop
 
 
-async def _migrate(conn):
+def _migrate(conn):
     from sqlalchemy import inspect, text
     inspector = inspect(conn)
+    if not inspector.has_table("datasets"):
+        return
     existing = {c["name"] for c in inspector.get_columns("datasets")}
     if "description" not in existing:
-        await conn.execute(text("ALTER TABLE datasets ADD COLUMN description TEXT"))
+        conn.execute(text("ALTER TABLE datasets ADD COLUMN description TEXT"))
     if "tags" not in existing:
-        await conn.execute(text("ALTER TABLE datasets ADD COLUMN tags TEXT DEFAULT '[]'"))
+        conn.execute(text("ALTER TABLE datasets ADD COLUMN tags TEXT DEFAULT '[]'"))
 
 
 @asynccontextmanager
