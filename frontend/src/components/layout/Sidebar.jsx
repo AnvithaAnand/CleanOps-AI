@@ -166,7 +166,7 @@ export default function Sidebar() {
           style={{ background: "var(--accent-bg)", border: `1px solid var(--accent-border)` }}
         >
           <Activity style={{ width: 11, height: 11, color: "var(--success)" }} />
-          <span className="text-xs" style={{ color: "var(--text-muted)" }}>v1.0 · Phase 3</span>
+          <span className="text-xs" style={{ color: "var(--text-muted)" }}>v1.0 · Phase 5</span>
           <span
             className="ml-auto text-[10px] font-bold px-1.5 py-0.5 rounded"
             style={{ background: "rgba(16,185,129,0.15)", color: "var(--success)" }}
