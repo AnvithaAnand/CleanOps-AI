@@ -1,5 +1,5 @@
 import { NavLink, useNavigate } from "react-router-dom";
-import { LayoutDashboard, Upload, ShieldCheck, Sparkles, Database, Activity, ChevronRight, Bell, Users, LogOut } from "lucide-react";
+import { LayoutDashboard, Upload, ShieldCheck, Sparkles, Database, Activity, ChevronRight, Bell, Users, LogOut, Clock } from "lucide-react";
 import { useTheme } from "../../contexts/ThemeContext";
 import { useUnreadCount } from "../../hooks/useAlerts";
 import { useAuth } from "../../contexts/AuthContext";
@@ -8,7 +8,8 @@ const links = [
   { to: "/",        icon: LayoutDashboard, label: "Dashboard",     end: true },
   { to: "/upload",  icon: Upload,          label: "Upload Dataset", end: false },
   { to: "/rules",   icon: ShieldCheck,     label: "Quality Rules",  end: false },
-  { to: "/alerts",  icon: Bell,            label: "Alerts",         end: false, badge: true },
+  { to: "/alerts",   icon: Bell,            label: "Alerts",         end: false, badge: true },
+  { to: "/activity", icon: Clock,           label: "Activity",       end: false },
 ];
 
 export default function Sidebar() {

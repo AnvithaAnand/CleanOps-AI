@@ -11,6 +11,7 @@ import AlertsPage from "./pages/AlertsPage";
 import LoginPage from "./pages/LoginPage";
 import SignupPage from "./pages/SignupPage";
 import UsersPage from "./pages/UsersPage";
+import ActivityPage from "./pages/ActivityPage";
 
 export const router = createBrowserRouter([
   { path: "/login",  element: <LoginPage /> },
@@ -26,6 +27,7 @@ export const router = createBrowserRouter([
       { path: "dataset/:id/audit", element: <AuditReport /> },
       { path: "rules", element: <RuleBuilder /> },
       { path: "alerts", element: <AlertsPage /> },
+      { path: "activity", element: <ActivityPage /> },
       { path: "users", element: <ProtectedRoute requiredRole="admin"><UsersPage /></ProtectedRoute> },
     ],
   },

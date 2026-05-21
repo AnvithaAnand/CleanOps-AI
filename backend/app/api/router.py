@@ -6,6 +6,7 @@ from app.api.auth_router import router as auth_router
 from app.api.contracts import router as contracts_router
 from app.api.schedules import router as schedules_router
 from app.api.pipeline import router as pipeline_router
+from app.api.activity import router as activity_router
 from app.api.datasets import router as datasets_router
 from app.api.health import router as health_router
 from app.api.jobs import router as jobs_router
@@ -22,3 +23,4 @@ api_router.include_router(alerts_router)
 api_router.include_router(contracts_router)
 api_router.include_router(schedules_router)
 api_router.include_router(pipeline_router)
+api_router.include_router(activity_router)

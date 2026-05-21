@@ -24,7 +24,8 @@ const staticTitles = {
   "/upload":  { title: "Upload Dataset",  sub: "Import CSV, XLSX, or Parquet files" },
   "/rules":   { title: "Quality Rules",   sub: "Define and manage validation rules" },
   "/alerts":  { title: "Alerts",          sub: "Quality signals and rule management" },
-  "/users":   { title: "User Management", sub: "Roles and access control" },
+  "/users":    { title: "User Management", sub: "Roles and access control" },
+  "/activity": { title: "Team Activity",   sub: "All dataset actions across your workspace" },
 };
 
 export default function Header() {
