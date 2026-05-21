@@ -13,7 +13,7 @@ def _make_async_url(url: str) -> str:
     return url
 
 
-_db_url = _make_async_url(settings.DATABASE_URL)
+_db_url = _make_async_url(settings.DATABASE_URL.strip())
 
 engine = create_async_engine(
     _db_url,

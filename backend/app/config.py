@@ -3,6 +3,10 @@ from pydantic_settings import BaseSettings
 
 class Settings(BaseSettings):
     DATABASE_URL: str = "sqlite+aiosqlite:///./cleanops.db"
+
+    @property
+    def database_url(self) -> str:
+        return self.DATABASE_URL.strip()
     UPLOAD_DIR: str = "./uploads"
     GEMINI_API_KEY: str = ""
     CORS_ORIGINS: str = "http://localhost:5173"
