@@ -13,6 +13,8 @@ from app.models.contract import DataContract
 from app.models.user import User
 from app.models.schedule import ScanSchedule
 from app.models.webhook import WebhookEndpoint
+from app.models.auto_repair import AutoRepairConfig
+from app.models.notification_settings import NotificationSettings
 
 __all__ = [
     "Dataset",
@@ -36,4 +38,6 @@ __all__ = [
     "User",
     "ScanSchedule",
     "WebhookEndpoint",
+    "AutoRepairConfig",
+    "NotificationSettings",
 ]

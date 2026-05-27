@@ -1,6 +1,7 @@
 import { useState } from "react";
-import { Bell, Trash2, ToggleLeft, ToggleRight, Plus, Zap, AlertTriangle, Info, Loader2, X } from "lucide-react";
+import { Bell, Trash2, ToggleLeft, ToggleRight, Plus, Zap, AlertTriangle, Info, Loader2, X, Mail, Send, CheckCircle2 } from "lucide-react";
 import { useAlerts, useAlertRules, useDeleteAlert, useMarkRead, useToggleRule, useDeleteRule, useCreateRule } from "../hooks/useAlerts";
+import { useNotificationSettings, useUpdateNotificationSettings, useSendTestNotification } from "../hooks/useNotifications";
 import { formatDate } from "../lib/utils";
 
 const severityConfig = {
@@ -86,6 +87,142 @@ function NewRuleModal({ onClose }) {
   );
 }
 
+function NotificationsTab() {
+  const { data: settings, isLoading } = useNotificationSettings();
+  const update = useUpdateNotificationSettings();
+  const test = useSendTestNotification();
+  const [email, setEmail] = useState("");
+  const [initialized, setInitialized] = useState(false);
+
+  if (!initialized && settings) {
+    setEmail(settings.email || "");
+    setInitialized(true);
+  }
+
+  if (isLoading) return <div className="h-32 shimmer rounded-xl" />;
+
+  const isActive = settings?.is_active ?? false;
+  const fieldStyle = {
+    background: "var(--bg-hover)", border: "1px solid var(--border)",
+    color: "var(--text-primary)", borderRadius: "0.5rem",
+    padding: "8px 12px", fontSize: 13, outline: "none", width: "100%",
+  };
+
+  const save = (patch) =>
+    update.mutate({
+      email: email.trim() || null,
+      notify_on_critical: settings?.notify_on_critical ?? true,
+      notify_on_warning: settings?.notify_on_warning ?? false,
+      is_active: isActive,
+      ...patch,
+    });
+
+  return (
+    <div className="space-y-4">
+      {/* Enable toggle */}
+      <div className="rounded-xl p-4 flex items-center justify-between gap-4"
+        style={{ background: "var(--bg-card)", border: `1px solid ${isActive ? "rgba(16,185,129,0.3)" : "var(--border)"}` }}>
+        <div className="flex items-center gap-3">
+          <div className="w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0"
+            style={{ background: isActive ? "rgba(16,185,129,0.1)" : "var(--bg-hover)" }}>
+            <Mail style={{ width: 16, height: 16, color: isActive ? "var(--success)" : "var(--text-faint)" }} />
+          </div>
+          <div>
+            <p className="text-sm font-semibold" style={{ color: "var(--text-primary)" }}>
+              Email notifications are {isActive ? "enabled" : "disabled"}
+            </p>
+            <p className="text-xs mt-0.5" style={{ color: "var(--text-muted)" }}>
+              {isActive ? `Sending alerts to ${settings?.email || "—"}` : "Enable to receive alerts by email"}
+            </p>
+          </div>
+        </div>
+        <button onClick={() => save({ is_active: !isActive })} disabled={update.isPending}>
+          {isActive
+            ? <ToggleRight style={{ width: 28, height: 28, color: "var(--success)" }} />
+            : <ToggleLeft style={{ width: 28, height: 28, color: "var(--text-faint)" }} />}
+        </button>
+      </div>
+
+      {/* Email address */}
+      <div className="rounded-xl p-4 space-y-3"
+        style={{ background: "var(--bg-card)", border: "1px solid var(--border)" }}>
+        <p className="text-xs font-semibold" style={{ color: "var(--text-primary)" }}>Recipient Email</p>
+        <input
+          type="email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          placeholder="you@example.com"
+          style={fieldStyle}
+        />
+        <button
+          onClick={() => save({})}
+          disabled={update.isPending}
+          className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold text-white"
+          style={{ background: "linear-gradient(135deg, var(--accent), #4f46e5)" }}>
+          {update.isPending ? "Saving..." : "Save Email"}
+        </button>
+      </div>
+
+      {/* What to notify */}
+      <div className="rounded-xl p-4 space-y-3"
+        style={{ background: "var(--bg-card)", border: "1px solid var(--border)" }}>
+        <p className="text-xs font-semibold" style={{ color: "var(--text-primary)" }}>Notify me when</p>
+        {[
+          { key: "notify_on_critical", label: "Critical alerts fire", desc: "Trust score crash, severe drift, contract violations" },
+          { key: "notify_on_warning",  label: "Warning alerts fire", desc: "High null rates, elevated issue counts" },
+        ].map(({ key, label, desc }) => (
+          <div key={key} className="flex items-start gap-3">
+            <button
+              onClick={() => save({ [key]: !settings?.[key] })}
+              className="mt-0.5 flex-shrink-0">
+              {settings?.[key]
+                ? <ToggleRight style={{ width: 20, height: 20, color: "var(--success)" }} />
+                : <ToggleLeft  style={{ width: 20, height: 20, color: "var(--text-faint)" }} />}
+            </button>
+            <div>
+              <p className="text-xs font-medium" style={{ color: "var(--text-primary)" }}>{label}</p>
+              <p className="text-[11px] mt-0.5" style={{ color: "var(--text-muted)" }}>{desc}</p>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* Test */}
+      <div className="rounded-xl p-4 flex items-center justify-between gap-4"
+        style={{ background: "var(--bg-card)", border: "1px solid var(--border)" }}>
+        <div>
+          <p className="text-xs font-semibold" style={{ color: "var(--text-primary)" }}>Send Test Email</p>
+          <p className="text-xs mt-0.5" style={{ color: "var(--text-muted)" }}>
+            Verify your email setup is working correctly.
+          </p>
+        </div>
+        <button
+          onClick={() => test.mutate()}
+          disabled={test.isPending || !isActive || !settings?.email}
+          className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold flex-shrink-0 disabled:opacity-40"
+          style={{ background: "var(--accent-bg)", color: "var(--accent)", border: "1px solid var(--accent-border)" }}>
+          {test.isPending
+            ? <><Loader2 style={{ width: 11, height: 11 }} className="animate-spin" />Sending...</>
+            : test.isSuccess
+            ? <><CheckCircle2 style={{ width: 11, height: 11 }} />Sent!</>
+            : <><Send style={{ width: 11, height: 11 }} />Send Test</>}
+        </button>
+      </div>
+
+      {/* Setup note */}
+      <div className="rounded-lg p-3"
+        style={{ background: "var(--accent-bg)", border: "1px solid var(--accent-border)" }}>
+        <p className="text-xs font-semibold mb-1" style={{ color: "var(--accent-light)" }}>Setup required</p>
+        <p className="text-[11px] leading-relaxed" style={{ color: "var(--text-muted)" }}>
+          Add <code style={{ background: "rgba(99,102,241,0.15)", padding: "1px 4px", borderRadius: 3 }}>SENDGRID_API_KEY</code> and{" "}
+          <code style={{ background: "rgba(99,102,241,0.15)", padding: "1px 4px", borderRadius: 3 }}>SENDGRID_FROM_EMAIL</code> to your
+          Render environment variables to activate email delivery.
+        </p>
+      </div>
+    </div>
+  );
+}
+
 export default function AlertsPage() {
   const [view, setView] = useState("alerts");
   const [showNew, setShowNew] = useState(false);
@@ -126,15 +263,19 @@ export default function AlertsPage() {
 
       {/* Tab bar */}
       <div className="flex gap-1 p-1 rounded-xl" style={{ background: "var(--bg-hover)", width: "fit-content" }}>
-        {["alerts", "rules"].map((t) => (
-          <button key={t} onClick={() => setView(t)}
-            className="px-4 py-1.5 rounded-lg text-xs font-medium capitalize transition-all"
+        {[
+          { id: "alerts",        label: `Alerts (${alerts.length})` },
+          { id: "rules",         label: `Rules (${rules.length})` },
+          { id: "notifications", label: "Notifications" },
+        ].map(({ id, label }) => (
+          <button key={id} onClick={() => setView(id)}
+            className="px-4 py-1.5 rounded-lg text-xs font-medium transition-all"
             style={{
-              background: view === t ? "var(--bg-card)" : "transparent",
-              color: view === t ? "var(--accent)" : "var(--text-muted)",
-              border: view === t ? "1px solid var(--border)" : "1px solid transparent",
+              background: view === id ? "var(--bg-card)" : "transparent",
+              color: view === id ? "var(--accent)" : "var(--text-muted)",
+              border: view === id ? "1px solid var(--border)" : "1px solid transparent",
             }}>
-            {t === "alerts" ? `Alerts (${alerts.length})` : `Rules (${rules.length})`}
+            {label}
           </button>
         ))}
       </div>
@@ -243,6 +384,8 @@ export default function AlertsPage() {
           )}
         </div>
       )}
+
+      {view === "notifications" && <NotificationsTab />}
     </div>
   );
 }

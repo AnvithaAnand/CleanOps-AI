@@ -14,6 +14,8 @@ class Settings(BaseSettings):
     JWT_SECRET_KEY: str = "changeme-use-a-real-secret-in-production"
     JWT_ALGORITHM: str = "HS256"
     JWT_EXPIRY_HOURS: int = 72
+    SENDGRID_API_KEY: str = ""
+    SENDGRID_FROM_EMAIL: str = ""
 
     model_config = {"env_file": ".env", "env_file_encoding": "utf-8"}
 

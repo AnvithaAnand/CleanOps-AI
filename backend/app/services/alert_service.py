@@ -2,9 +2,25 @@ from sqlalchemy import select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.models.alert import Alert, AlertRule
 from app.models.drift import DriftReport
+from app.models.notification_settings import NotificationSettings
 from app.models.profile import ColumnProfile
 from app.models.validation import DetectedIssue
 from app.services.webhook_service import fire_webhooks
+
+
+async def _maybe_send_email(db: AsyncSession, title: str, message: str, severity: str):
+    result = await db.execute(select(NotificationSettings).limit(1))
+    ns = result.scalar_one_or_none()
+    if not ns or not ns.is_active or not ns.email:
+        return
+    if severity == "critical" and not ns.notify_on_critical:
+        return
+    if severity == "warning" and not ns.notify_on_warning:
+        return
+    if severity == "info":
+        return
+    from app.services.email_service import send_alert_email
+    await send_alert_email(ns.email, title, message, severity)
 
 
 async def create_alert(db: AsyncSession, dataset_id: str | None, alert_type: str,
@@ -25,6 +41,7 @@ async def create_alert(db: AsyncSession, dataset_id: str | None, alert_type: str
         "title": title,
         "message": message,
     })
+    await _maybe_send_email(db, title, message, severity)
     return alert
 
 
