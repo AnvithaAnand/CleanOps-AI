@@ -214,8 +214,8 @@ function NotificationsTab() {
         style={{ background: "var(--accent-bg)", border: "1px solid var(--accent-border)" }}>
         <p className="text-xs font-semibold mb-1" style={{ color: "var(--accent-light)" }}>Setup required</p>
         <p className="text-[11px] leading-relaxed" style={{ color: "var(--text-muted)" }}>
-          Add <code style={{ background: "rgba(99,102,241,0.15)", padding: "1px 4px", borderRadius: 3 }}>SENDGRID_API_KEY</code> and{" "}
-          <code style={{ background: "rgba(99,102,241,0.15)", padding: "1px 4px", borderRadius: 3 }}>SENDGRID_FROM_EMAIL</code> to your
+          Add <code style={{ background: "rgba(99,102,241,0.15)", padding: "1px 4px", borderRadius: 3 }}>RESEND_API_KEY</code> and{" "}
+          <code style={{ background: "rgba(99,102,241,0.15)", padding: "1px 4px", borderRadius: 3 }}>RESEND_FROM_EMAIL</code> to your
           Render environment variables to activate email delivery.
         </p>
       </div>

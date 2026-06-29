@@ -36,7 +36,7 @@ _HTML_TEMPLATE = """
 
 
 async def send_alert_email(to_email: str, title: str, message: str, severity: str) -> bool:
-    if not settings.SENDGRID_API_KEY or not settings.SENDGRID_FROM_EMAIL:
+    if not settings.RESEND_API_KEY:
         return False
 
     color = _SEVERITY_COLORS.get(severity, _SEVERITY_COLORS["info"])
@@ -47,23 +47,23 @@ async def send_alert_email(to_email: str, title: str, message: str, severity: st
         message=message,
     )
 
+    from_email = settings.RESEND_FROM_EMAIL or "onboarding@resend.dev"
+
     payload = {
-        "personalizations": [{"to": [{"email": to_email}]}],
-        "from": {"email": settings.SENDGRID_FROM_EMAIL, "name": "CleanOps AI"},
+        "from": f"CleanOps AI <{from_email}>",
+        "to": [to_email],
         "subject": f"[CleanOps] {severity.upper()}: {title}",
-        "content": [
-            {"type": "text/plain", "value": message},
-            {"type": "text/html", "value": html},
-        ],
+        "text": message,
+        "html": html,
     }
 
     try:
         async with httpx.AsyncClient(timeout=10) as client:
             resp = await client.post(
-                "https://api.sendgrid.com/v3/mail/send",
-                headers={"Authorization": f"Bearer {settings.SENDGRID_API_KEY}"},
+                "https://api.resend.com/emails",
+                headers={"Authorization": f"Bearer {settings.RESEND_API_KEY}"},
                 json=payload,
             )
-            return resp.status_code == 202
+            return resp.status_code == 200
     except Exception:
         return False
