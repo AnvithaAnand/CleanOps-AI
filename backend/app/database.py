@@ -17,12 +17,6 @@ _db_url = _make_async_url(settings.DATABASE_URL.strip())
 
 if "sqlite" in _db_url:
     _connect_args = {"check_same_thread": False}
-elif "postgresql" in _db_url:
-    import ssl
-    _ssl_ctx = ssl.create_default_context()
-    _ssl_ctx.check_hostname = False
-    _ssl_ctx.verify_mode = ssl.CERT_NONE
-    _connect_args = {"ssl": _ssl_ctx}
 else:
     _connect_args = {}
 
