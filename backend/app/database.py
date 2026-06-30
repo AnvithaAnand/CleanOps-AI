@@ -15,10 +15,17 @@ def _make_async_url(url: str) -> str:
 
 _db_url = _make_async_url(settings.DATABASE_URL.strip())
 
+_is_postgres = "postgresql" in _db_url
+_connect_args = (
+    {"check_same_thread": False} if "sqlite" in _db_url
+    else {"ssl": "require"} if _is_postgres
+    else {}
+)
+
 engine = create_async_engine(
     _db_url,
     echo=False,
-    connect_args={"check_same_thread": False} if "sqlite" in _db_url else {},
+    connect_args=_connect_args,
 )
 
 async_session = async_sessionmaker(engine, class_=AsyncSession, expire_on_commit=False)
