@@ -15,12 +15,16 @@ def _make_async_url(url: str) -> str:
 
 _db_url = _make_async_url(settings.DATABASE_URL.strip())
 
-_is_postgres = "postgresql" in _db_url
-_connect_args = (
-    {"check_same_thread": False} if "sqlite" in _db_url
-    else {"ssl": "require"} if _is_postgres
-    else {}
-)
+if "sqlite" in _db_url:
+    _connect_args = {"check_same_thread": False}
+elif "postgresql" in _db_url:
+    import ssl
+    _ssl_ctx = ssl.create_default_context()
+    _ssl_ctx.check_hostname = False
+    _ssl_ctx.verify_mode = ssl.CERT_NONE
+    _connect_args = {"ssl": _ssl_ctx}
+else:
+    _connect_args = {}
 
 engine = create_async_engine(
     _db_url,
