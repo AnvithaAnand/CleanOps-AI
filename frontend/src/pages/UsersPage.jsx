@@ -133,11 +133,8 @@ export default function UsersPage() {
                   {!isMe && (
                     <button
                       onClick={() => toggleActive.mutate(u.id)}
-                      className="w-6 h-6 flex items-center justify-center rounded-lg transition-all"
-                      style={{ color: "var(--text-faint)" }}
+                      className={`w-6 h-6 ${u.is_active ? "btn-danger-ghost" : "btn-success-ghost"}`}
                       title={u.is_active ? "Disable user" : "Enable user"}
-                      onMouseEnter={(e) => { e.currentTarget.style.background = u.is_active ? "rgba(239,68,68,0.1)" : "rgba(16,185,129,0.1)"; e.currentTarget.style.color = u.is_active ? "#ef4444" : "var(--success)"; }}
-                      onMouseLeave={(e) => { e.currentTarget.style.background = "transparent"; e.currentTarget.style.color = "var(--text-faint)"; }}
                     >
                       {u.is_active ? <UserX style={{ width: 13, height: 13 }} /> : <UserCheck style={{ width: 13, height: 13 }} />}
                     </button>

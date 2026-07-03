@@ -107,21 +107,13 @@ export default function DatasetExplorer() {
       </div>
 
       {/* Tabs */}
-      <div className="flex gap-0.5 rounded-xl p-1" style={{ background: "var(--bg-card)", border: "1px solid var(--border)" }}>
-        {tabs.map(({ id: tid, label, icon: Icon }) => {
-          const active = activeTab === tid;
-          return (
-            <button key={tid} onClick={() => setActiveTab(tid)}
-              className="flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-medium transition-all flex-1 justify-center"
-              style={{
-                background: active ? "var(--accent-bg)" : "transparent",
-                color: active ? "var(--accent-light)" : "var(--text-muted)",
-                border: active ? "1px solid var(--accent-border)" : "1px solid transparent",
-              }}>
-              <Icon style={{ width: 13, height: 13 }} />{label}
-            </button>
-          );
-        })}
+      <div className="tab-bar">
+        {tabs.map(({ id: tid, label, icon: Icon }) => (
+          <button key={tid} onClick={() => setActiveTab(tid)}
+            className={`tab-item ${activeTab === tid ? "active" : ""}`}>
+            <Icon style={{ width: 12, height: 12 }} />{label}
+          </button>
+        ))}
       </div>
 
       {activeTab === "overview" && <OverviewTab dataset={dataset} trustScore={trustScore} issues={issuesData?.issues} profile={profile} datasetId={id} />}
@@ -261,9 +253,7 @@ function DataTab({ preview }) {
           </thead>
           <tbody>
             {preview.rows.map((row, idx) => (
-              <tr key={idx} style={{ borderBottom: "1px solid var(--border)" }}
-                onMouseEnter={(e) => { e.currentTarget.style.background = "var(--bg-hover)"; }}
-                onMouseLeave={(e) => { e.currentTarget.style.background = "transparent"; }}>
+              <tr key={idx} className="table-row-hover" style={{ borderBottom: "1px solid var(--border)" }}>
                 <td className="px-3 py-2 text-right" style={{ color: "var(--text-faint)" }}>{idx + 1}</td>
                 {preview.columns.map((col) => (
                   <td key={col} className="px-3 py-2 whitespace-nowrap max-w-[180px] truncate"
@@ -285,9 +275,7 @@ function ColumnsTab({ profile }) {
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
       {profile.columns.map((col) => (
-        <div key={col.id} className="rounded-xl p-5 transition-all" style={C.card}
-          onMouseEnter={(e) => { e.currentTarget.style.borderColor = "var(--border-strong)"; }}
-          onMouseLeave={(e) => { e.currentTarget.style.borderColor = "var(--border)"; }}>
+        <div key={col.id} className="co-card p-5">
           <div className="flex items-start justify-between mb-4">
             <div className="flex items-center gap-2 flex-wrap">
               <h4 className="font-semibold text-sm" style={C.primary}>{col.column_name}</h4>
@@ -415,15 +403,7 @@ function ExportReportButton({ datasetId, datasetName }) {
           style={{ background: "var(--bg-card)", border: "1px solid var(--border)" }}
         >
           {[{ fmt: "excel", label: "Excel (.xlsx)" }, { fmt: "pdf", label: "PDF" }].map(({ fmt, label }) => (
-            <button
-              key={fmt}
-              onClick={() => download(fmt)}
-              disabled={!!loading}
-              className="w-full text-left px-4 py-2.5 text-xs font-medium transition-all"
-              style={{ color: "var(--text-primary)" }}
-              onMouseEnter={(e) => e.currentTarget.style.background = "var(--bg-hover)"}
-              onMouseLeave={(e) => e.currentTarget.style.background = "transparent"}
-            >
+            <button key={fmt} onClick={() => download(fmt)} disabled={!!loading} className="menu-item">
               {loading === fmt ? "Downloading..." : label}
             </button>
           ))}

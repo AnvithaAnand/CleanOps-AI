@@ -1,20 +1,36 @@
 import { NavLink, useNavigate } from "react-router-dom";
-import { LayoutDashboard, Upload, ShieldCheck, Sparkles, Database, Activity, ChevronRight, Bell, Users, LogOut, Clock } from "lucide-react";
-import { useTheme } from "../../contexts/ThemeContext";
+import { LayoutDashboard, Upload, ShieldCheck, Database, Activity, Bell, Users, LogOut, Clock } from "lucide-react";
 import { useUnreadCount } from "../../hooks/useAlerts";
 import { useAuth } from "../../contexts/AuthContext";
 
-const links = [
-  { to: "/",        icon: LayoutDashboard, label: "Dashboard",     end: true },
-  { to: "/upload",  icon: Upload,          label: "Upload Dataset", end: false },
-  { to: "/rules",   icon: ShieldCheck,     label: "Quality Rules",  end: false },
-  { to: "/alerts",   icon: Bell,            label: "Alerts",         end: false, badge: true },
-  { to: "/activity", icon: Clock,           label: "Activity",       end: false },
+const NAV_LINKS = [
+  { to: "/",        icon: LayoutDashboard, label: "Dashboard",      end: true },
+  { to: "/upload",  icon: Upload,          label: "Upload Dataset",  end: false },
+  { to: "/rules",   icon: ShieldCheck,     label: "Quality Rules",   end: false },
+  { to: "/alerts",  icon: Bell,            label: "Alerts",          end: false, badge: true },
+  { to: "/activity",icon: Clock,           label: "Activity",        end: false },
 ];
 
+function NavItem({ to, icon: Icon, label, end, badge, unread }) {
+  return (
+    <NavLink to={to} end={end} className={({ isActive }) => `nav-item ${isActive ? "active" : ""}`}>
+      {({ isActive }) => (
+        <>
+          <Icon style={{ width: 15, height: 15, flexShrink: 0 }} />
+          <span className="flex-1 text-sm">{label}</span>
+          {badge && unread > 0 && (
+            <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-full text-white"
+              style={{ background: "var(--danger)" }}>
+              {unread > 9 ? "9+" : unread}
+            </span>
+          )}
+        </>
+      )}
+    </NavLink>
+  );
+}
+
 export default function Sidebar() {
-  const { theme } = useTheme();
-  const isDark = theme === "dark";
   const { data: unreadAlerts = 0 } = useUnreadCount();
   const { user, logout, isAdmin } = useAuth();
   const navigate = useNavigate();
@@ -22,158 +38,54 @@ export default function Sidebar() {
   const handleLogout = () => { logout(); navigate("/login"); };
 
   return (
-    <aside
-      className="w-64 min-h-screen flex flex-col flex-shrink-0"
-      style={{
-        background: "var(--bg-sidebar)",
-        borderRight: `1px solid var(--border)`,
-        transition: "background 0.2s ease",
-      }}
-    >
+    <aside className="w-60 min-h-screen flex flex-col flex-shrink-0"
+      style={{ background: "var(--bg-sidebar)", borderRight: "1px solid var(--border)" }}>
+
       {/* Logo */}
-      <div className="px-5 py-5" style={{ borderBottom: `1px solid var(--border)` }}>
+      <div className="px-4 py-4" style={{ borderBottom: "1px solid var(--border)" }}>
         <div className="flex items-center gap-3">
-          <div
-            className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0"
-            style={{ background: "linear-gradient(135deg, #6366f1, #8b5cf6)" }}
-          >
-            <Database style={{ width: 17, height: 17, color: "#fff" }} />
+          <div className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0"
+            style={{ background: "linear-gradient(135deg, var(--accent), #8b5cf6)" }}>
+            <Database style={{ width: 15, height: 15, color: "#fff" }} />
           </div>
           <div>
-            <h1 className="text-sm font-bold leading-tight" style={{ color: "var(--text-primary)" }}>
-              CleanOps AI
-            </h1>
-            <div className="flex items-center gap-1 mt-0.5">
-              <Sparkles style={{ width: 9, height: 9, color: "var(--accent)" }} />
-              <p className="text-[10px] font-semibold" style={{ color: "var(--accent)" }}>
-                Data Reliability Platform
-              </p>
-            </div>
+            <p className="text-sm font-bold leading-tight" style={{ color: "var(--text-primary)" }}>CleanOps AI</p>
+            <p className="text-[10px] mt-0.5" style={{ color: "var(--text-faint)" }}>Data Reliability Platform</p>
           </div>
         </div>
       </div>
 
       {/* Nav */}
       <nav className="flex-1 px-3 py-4 space-y-0.5">
-        <p
-          className="px-3 mb-3 text-[10px] font-bold uppercase tracking-widest"
-          style={{ color: "var(--text-faint)" }}
-        >
-          Navigation
-        </p>
-        {links.map(({ to, icon: Icon, label, end, badge }) => (
-          <NavLink
-            key={to}
-            to={to}
-            end={end}
-            style={({ isActive }) => ({
-              display: "flex",
-              alignItems: "center",
-              gap: "0.75rem",
-              padding: "0.625rem 0.75rem",
-              borderRadius: "0.5rem",
-              fontSize: "0.875rem",
-              fontWeight: 500,
-              transition: "all 0.15s ease",
-              textDecoration: "none",
-              borderLeft: isActive ? `2px solid var(--accent)` : "2px solid transparent",
-              background: isActive ? "var(--accent-bg)" : "transparent",
-              color: isActive ? "var(--accent-light)" : "var(--text-muted)",
-            })}
-            onMouseEnter={(e) => {
-              if (!e.currentTarget.style.background.includes("accent-bg")) {
-                e.currentTarget.style.background = "var(--bg-hover)";
-                e.currentTarget.style.color = "var(--text-primary)";
-              }
-            }}
-            onMouseLeave={(e) => {
-              const isActive = e.currentTarget.getAttribute("aria-current") === "page";
-              if (!isActive) {
-                e.currentTarget.style.background = "transparent";
-                e.currentTarget.style.color = "var(--text-muted)";
-              }
-            }}
-          >
-            {({ isActive }) => (
-              <>
-                <Icon style={{ width: 15, height: 15, flexShrink: 0, color: isActive ? "var(--accent-light)" : "var(--text-faint)" }} />
-                <span className="flex-1">{label}</span>
-                {badge && unreadAlerts > 0 && (
-                  <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-full text-white"
-                    style={{ background: "#ef4444" }}>
-                    {unreadAlerts > 9 ? "9+" : unreadAlerts}
-                  </span>
-                )}
-                {isActive && <ChevronRight style={{ width: 12, height: 12, color: "var(--accent)" }} />}
-              </>
-            )}
-          </NavLink>
+        <p className="section-label px-2 mb-3">Navigation</p>
+        {NAV_LINKS.map((link) => (
+          <NavItem key={link.to} {...link} unread={unreadAlerts} />
         ))}
+        {isAdmin && <NavItem to="/users" icon={Users} label="Users" end={false} />}
       </nav>
 
-        {/* Admin: Users link */}
-        {isAdmin && (
-          <NavLink
-            to="/users"
-            end={false}
-            style={({ isActive }) => ({
-              display: "flex", alignItems: "center", gap: "0.75rem",
-              padding: "0.625rem 0.75rem", borderRadius: "0.5rem",
-              fontSize: "0.875rem", fontWeight: 500, transition: "all 0.15s ease",
-              textDecoration: "none",
-              borderLeft: isActive ? `2px solid var(--accent)` : "2px solid transparent",
-              background: isActive ? "var(--accent-bg)" : "transparent",
-              color: isActive ? "var(--accent-light)" : "var(--text-muted)",
-            })}
-            onMouseEnter={(e) => { if (!e.currentTarget.style.background.includes("accent-bg")) { e.currentTarget.style.background = "var(--bg-hover)"; e.currentTarget.style.color = "var(--text-primary)"; }}}
-            onMouseLeave={(e) => { if (e.currentTarget.getAttribute("aria-current") !== "page") { e.currentTarget.style.background = "transparent"; e.currentTarget.style.color = "var(--text-muted)"; }}}
-          >
-            {({ isActive }) => (
-              <>
-                <Users style={{ width: 15, height: 15, flexShrink: 0, color: isActive ? "var(--accent-light)" : "var(--text-faint)" }} />
-                <span className="flex-1">Users</span>
-                {isActive && <ChevronRight style={{ width: 12, height: 12, color: "var(--accent)" }} />}
-              </>
-            )}
-          </NavLink>
-        )}
-
       {/* Footer */}
-      <div className="px-4 py-4" style={{ borderTop: `1px solid var(--border)` }}>
-        {/* User info */}
+      <div className="px-3 py-4" style={{ borderTop: "1px solid var(--border)" }}>
         {user && (
-          <div className="flex items-center gap-2 mb-3 px-1">
-            <div
-              className="w-7 h-7 rounded-lg flex items-center justify-center text-xs font-bold flex-shrink-0"
-              style={{ background: "var(--accent-bg)", color: "var(--accent)" }}
-            >
+          <div className="flex items-center gap-2.5 mb-3 px-1">
+            <div className="w-7 h-7 rounded-lg flex items-center justify-center text-[11px] font-bold flex-shrink-0"
+              style={{ background: "var(--accent-bg)", color: "var(--accent)" }}>
               {user.full_name?.[0]?.toUpperCase() || "?"}
             </div>
             <div className="flex-1 min-w-0">
               <p className="text-xs font-medium truncate" style={{ color: "var(--text-primary)" }}>{user.full_name}</p>
               <p className="text-[10px] capitalize" style={{ color: "var(--text-faint)" }}>{user.role}</p>
             </div>
-            <button onClick={handleLogout} title="Sign out"
-              style={{ color: "var(--text-faint)" }}
-              onMouseEnter={(e) => e.currentTarget.style.color = "var(--danger)"}
-              onMouseLeave={(e) => e.currentTarget.style.color = "var(--text-faint)"}
-            >
-              <LogOut style={{ width: 14, height: 14 }} />
+            <button onClick={handleLogout} title="Sign out" className="btn-danger-ghost p-1.5 rounded-md">
+              <LogOut style={{ width: 13, height: 13 }} />
             </button>
           </div>
         )}
-        <div
-          className="rounded-lg px-3 py-2.5 flex items-center gap-2"
-          style={{ background: "var(--accent-bg)", border: `1px solid var(--accent-border)` }}
-        >
-          <Activity style={{ width: 11, height: 11, color: "var(--success)" }} />
-          <span className="text-xs" style={{ color: "var(--text-muted)" }}>v1.0 · Phase 5</span>
-          <span
-            className="ml-auto text-[10px] font-bold px-1.5 py-0.5 rounded"
-            style={{ background: "rgba(16,185,129,0.15)", color: "var(--success)" }}
-          >
-            LIVE
-          </span>
+        <div className="flex items-center gap-2 px-2 py-2 rounded-lg"
+          style={{ background: "var(--accent-bg)", border: "1px solid var(--accent-border)" }}>
+          <Activity style={{ width: 10, height: 10, color: "var(--success)" }} />
+          <span className="text-[11px]" style={{ color: "var(--text-muted)" }}>v1.0 · Phase 5</span>
+          <span className="ml-auto badge badge-success" style={{ fontSize: "9px", padding: "1px 6px" }}>LIVE</span>
         </div>
       </div>
     </aside>

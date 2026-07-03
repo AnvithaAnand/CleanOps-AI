@@ -50,12 +50,12 @@ function NewRuleModal({ onClose }) {
           <div>
             <label className="block text-xs font-medium mb-1.5" style={{ color: "var(--text-muted)" }}>Rule Name</label>
             <input value={name} onChange={(e) => setName(e.target.value)} placeholder="e.g. Critical trust score alert"
-              className="w-full px-3 py-2.5 rounded-lg text-sm outline-none" style={fieldStyle} />
+              className="co-input" />
           </div>
           <div>
             <label className="block text-xs font-medium mb-1.5" style={{ color: "var(--text-muted)" }}>Condition</label>
             <select value={condition} onChange={(e) => setCondition(e.target.value)}
-              className="w-full px-3 py-2.5 rounded-lg text-sm outline-none" style={fieldStyle}>
+              className="co-input">
               {CONDITION_TYPES.map((c) => (
                 <option key={c.value} value={c.value}>{c.label}</option>
               ))}
@@ -67,7 +67,7 @@ function NewRuleModal({ onClose }) {
                 Threshold ({conditionMeta.suffix})
               </label>
               <input type="number" value={threshold} onChange={(e) => setThreshold(e.target.value)}
-                className="w-full px-3 py-2.5 rounded-lg text-sm outline-none" style={fieldStyle} />
+                className="co-input" />
             </div>
           )}
         </div>
@@ -102,11 +102,6 @@ function NotificationsTab() {
   if (isLoading) return <div className="h-32 shimmer rounded-xl" />;
 
   const isActive = settings?.is_active ?? false;
-  const fieldStyle = {
-    background: "var(--bg-hover)", border: "1px solid var(--border)",
-    color: "var(--text-primary)", borderRadius: "0.5rem",
-    padding: "8px 12px", fontSize: 13, outline: "none", width: "100%",
-  };
 
   const save = (patch) =>
     update.mutate({
@@ -152,7 +147,7 @@ function NotificationsTab() {
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           placeholder="you@example.com"
-          style={fieldStyle}
+          className="co-input"
         />
         <button
           onClick={() => save({})}
@@ -262,19 +257,13 @@ export default function AlertsPage() {
       </div>
 
       {/* Tab bar */}
-      <div className="flex gap-1 p-1 rounded-xl" style={{ background: "var(--bg-hover)", width: "fit-content" }}>
+      <div className="tab-bar" style={{ width: "fit-content" }}>
         {[
           { id: "alerts",        label: `Alerts (${alerts.length})` },
           { id: "rules",         label: `Rules (${rules.length})` },
           { id: "notifications", label: "Notifications" },
         ].map(({ id, label }) => (
-          <button key={id} onClick={() => setView(id)}
-            className="px-4 py-1.5 rounded-lg text-xs font-medium transition-all"
-            style={{
-              background: view === id ? "var(--bg-card)" : "transparent",
-              color: view === id ? "var(--accent)" : "var(--text-muted)",
-              border: view === id ? "1px solid var(--border)" : "1px solid transparent",
-            }}>
+          <button key={id} onClick={() => setView(id)} className={`tab-item ${view === id ? "active" : ""}`}>
             {label}
           </button>
         ))}
@@ -285,7 +274,7 @@ export default function AlertsPage() {
         <div className="rounded-2xl overflow-hidden" style={{ background: "var(--bg-card)", border: "1px solid var(--border)" }}>
           {loadingAlerts ? (
             <div className="flex items-center justify-center py-16">
-              <Loader2 style={{ width: 20, height: 20 }} className="animate-spin" style={{ color: "var(--text-muted)" }} />
+              <Loader2 style={{ width: 20, height: 20, color: "var(--text-muted)" }} className="animate-spin" />
             </div>
           ) : alerts.length === 0 ? (
             <div className="py-16 text-center">
@@ -323,10 +312,7 @@ export default function AlertsPage() {
                     <p className="text-[10px] mt-1.5" style={{ color: "var(--text-faint)" }}>{formatDate(alert.created_at)}</p>
                   </div>
                   <button onClick={() => deleteAlert.mutate(alert.id)}
-                    className="flex-shrink-0 mt-1 w-7 h-7 flex items-center justify-center rounded-lg transition-all"
-                    style={{ color: "var(--text-faint)" }}
-                    onMouseEnter={(e) => { e.currentTarget.style.background = "rgba(239,68,68,0.1)"; e.currentTarget.style.color = "#ef4444"; }}
-                    onMouseLeave={(e) => { e.currentTarget.style.background = "transparent"; e.currentTarget.style.color = "var(--text-faint)"; }}>
+                    className="btn-danger-ghost flex-shrink-0 mt-1 w-7 h-7">
                     <Trash2 style={{ width: 13, height: 13 }} />
                   </button>
                 </div>
@@ -372,11 +358,7 @@ export default function AlertsPage() {
                     : <ToggleLeft  style={{ width: 20, height: 20, color: "var(--text-faint)" }} />
                   }
                 </button>
-                <button onClick={() => deleteRule.mutate(rule.id)}
-                  className="w-7 h-7 flex items-center justify-center rounded-lg"
-                  style={{ color: "var(--text-faint)" }}
-                  onMouseEnter={(e) => { e.currentTarget.style.background = "rgba(239,68,68,0.1)"; e.currentTarget.style.color = "#ef4444"; }}
-                  onMouseLeave={(e) => { e.currentTarget.style.background = "transparent"; e.currentTarget.style.color = "var(--text-faint)"; }}>
+                <button onClick={() => deleteRule.mutate(rule.id)} className="btn-danger-ghost w-7 h-7">
                   <Trash2 style={{ width: 13, height: 13 }} />
                 </button>
               </div>

@@ -41,8 +41,8 @@ export default function Dashboard() {
   return (
     <div className="space-y-6 animate-fade-in">
       <div>
-        <h1 className="text-2xl font-bold" style={{ color: "var(--text-primary)" }}>Dashboard</h1>
-        <p className="text-sm mt-1" style={{ color: "var(--text-muted)" }}>
+        <h1 className="text-lg font-bold" style={{ color: "var(--text-primary)" }}>Dashboard</h1>
+        <p className="text-xs mt-0.5" style={{ color: "var(--text-muted)" }}>
           Monitor and manage your data quality at a glance
         </p>
       </div>
