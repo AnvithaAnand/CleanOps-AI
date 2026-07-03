@@ -7,6 +7,7 @@ import {
   downloadDataset,
   previewData,
   deleteDataset,
+  getTrustHistory,
 } from "../api/datasets";
 import client from "../api/client";
 
@@ -88,6 +89,14 @@ export function usePreviewData(id, rows = 100) {
   return useQuery({
     queryKey: ["preview", id, rows],
     queryFn: () => previewData(id, rows).then((r) => r.data),
+    enabled: !!id,
+  });
+}
+
+export function useTrustHistory(id) {
+  return useQuery({
+    queryKey: ["trustHistory", id],
+    queryFn: () => getTrustHistory(id).then((r) => r.data),
     enabled: !!id,
   });
 }

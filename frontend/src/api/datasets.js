@@ -52,3 +52,6 @@ export const importFromPostgresql = (body) =>
 
 export const deleteDataset = (id) =>
   client.delete(`/api/datasets/${id}`);
+
+export const getTrustHistory = (id) =>
+  client.get(`/api/datasets/${id}/trust-history`);

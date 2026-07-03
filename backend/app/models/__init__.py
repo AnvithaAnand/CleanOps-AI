@@ -15,6 +15,7 @@ from app.models.schedule import ScanSchedule
 from app.models.webhook import WebhookEndpoint
 from app.models.auto_repair import AutoRepairConfig
 from app.models.notification_settings import NotificationSettings
+from app.models.trust_history import TrustScoreSnapshot
 
 __all__ = [
     "Dataset",
@@ -40,4 +41,5 @@ __all__ = [
     "WebhookEndpoint",
     "AutoRepairConfig",
     "NotificationSettings",
+    "TrustScoreSnapshot",
 ]

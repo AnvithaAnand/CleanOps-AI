@@ -42,8 +42,13 @@ from app.utils.file_utils import detect_file_type, save_upload_file
 from app.models.audit import AuditLog
 from app.services.job_service import create_job, update_job
 from app.services.webhook_service import fire_webhooks
+from app.models.trust_history import TrustScoreSnapshot
 
 router = APIRouter(prefix="/api/datasets", tags=["datasets"])
+
+
+async def _record_snapshot(db: AsyncSession, dataset_id: str, score: float, event_type: str) -> None:
+    db.add(TrustScoreSnapshot(dataset_id=dataset_id, score=round(score, 2), event_type=event_type))
 
 
 async def _run_repairs_background(dataset_id: str, suggestion_ids: list[str], job_id: str | None = None):
@@ -82,6 +87,7 @@ async def _run_repairs_background(dataset_id: str, suggestion_ids: list[str], jo
             )
             dataset.trust_score = score.overall_score
             dataset.status = "validated"
+            await _record_snapshot(db, dataset_id, score.overall_score, "repaired")
             await db.commit()
 
             # Lineage: repair node linked to most recent issues node
@@ -160,6 +166,7 @@ async def _process_dataset(dataset_id: str, job_id: str | None = None):
             )
             dataset.trust_score = score_resp.overall_score
             dataset.status = "validated"
+            await _record_snapshot(db, dataset_id, score_resp.overall_score, "profiled")
             await db.commit()
 
             # Lineage: profile + issues nodes
@@ -608,6 +615,23 @@ async def get_trust_score(
     return calculate_trust_score(
         dataset_id, profiles, open_issues, dataset.row_count or 0
     )
+
+
+@router.get("/{dataset_id}/trust-history")
+async def get_trust_history(
+    dataset_id: str,
+    db: AsyncSession = Depends(get_db),
+):
+    result = await db.execute(
+        select(TrustScoreSnapshot)
+        .where(TrustScoreSnapshot.dataset_id == dataset_id)
+        .order_by(TrustScoreSnapshot.recorded_at.asc())
+    )
+    snapshots = result.scalars().all()
+    return [
+        {"score": s.score, "event_type": s.event_type, "recorded_at": s.recorded_at.isoformat()}
+        for s in snapshots
+    ]
 
 
 @router.post("/{dataset_id}/validate", response_model=ValidationRunResponse)

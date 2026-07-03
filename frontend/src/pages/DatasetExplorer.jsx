@@ -19,6 +19,7 @@ import ContractTab from "../components/contracts/ContractTab";
 import ScheduleTab from "../components/schedule/ScheduleTab";
 import PipelineTab from "../components/pipeline/PipelineTab";
 import AutoRepairTab from "../components/autorepair/AutoRepairTab";
+import TrustHistoryChart from "../components/charts/TrustHistoryChart";
 import { formatNumber } from "../lib/utils";
 
 const tabs = [
@@ -173,6 +174,10 @@ function OverviewTab({ dataset, trustScore, issues, profile, datasetId }) {
                 </div>
               </div>
             ))}
+          </div>
+          {/* History chart */}
+          <div className="mt-5 w-full pt-4" style={{ borderTop: "1px solid var(--border)" }}>
+            <TrustHistoryChart datasetId={datasetId} />
           </div>
         </div>
 
