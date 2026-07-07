@@ -360,6 +360,45 @@ async def import_from_postgresql_endpoint(
     return await _save_df_as_dataset(df, name, f"postgresql://{body.host}/{body.database}", db, background_tasks)
 
 
+@router.get("/analytics")
+async def get_workspace_analytics(db: AsyncSession = Depends(get_db)):
+    from collections import Counter
+    from sqlalchemy import func as sqlfunc
+
+    # Trust score tiers
+    result = await db.execute(select(Dataset))
+    all_datasets = result.scalars().all()
+    scored = [d for d in all_datasets if d.trust_score is not None]
+
+    tiers = {"Excellent": 0, "Good": 0, "Fair": 0, "Poor": 0, "Critical": 0}
+    for d in scored:
+        s = d.trust_score
+        if s >= 90:   tiers["Excellent"] += 1
+        elif s >= 75: tiers["Good"] += 1
+        elif s >= 60: tiers["Fair"] += 1
+        elif s >= 40: tiers["Poor"] += 1
+        else:         tiers["Critical"] += 1
+
+    score_distribution = [{"tier": k, "count": v} for k, v in tiers.items() if v > 0]
+
+    # Issues by type (open only)
+    issue_result = await db.execute(
+        select(DetectedIssue.issue_type, sqlfunc.count(DetectedIssue.id).label("count"))
+        .where(DetectedIssue.status == "open")
+        .group_by(DetectedIssue.issue_type)
+        .order_by(sqlfunc.count(DetectedIssue.id).desc())
+        .limit(8)
+    )
+    issues_by_type = [{"type": row.issue_type, "count": row.count} for row in issue_result]
+
+    return {
+        "total_datasets": len(all_datasets),
+        "scored_datasets": len(scored),
+        "score_distribution": score_distribution,
+        "issues_by_type": issues_by_type,
+    }
+
+
 @router.get("/", response_model=list[DatasetListItem])
 async def list_datasets(
     skip: int = Query(0, ge=0),

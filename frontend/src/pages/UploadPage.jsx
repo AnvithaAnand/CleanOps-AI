@@ -21,26 +21,13 @@ const TABS = [
 
 function TabBar({ active, onChange }) {
   return (
-    <div className="flex gap-1 p-1 rounded-xl mb-6" style={{ background: "var(--bg-hover)" }}>
-      {TABS.map(({ id, label, Icon }) => {
-        const isActive = active === id;
-        return (
-          <button
-            key={id}
-            onClick={() => onChange(id)}
-            className="flex-1 flex items-center justify-center gap-1.5 py-2 px-2 rounded-lg text-xs font-medium transition-all"
-            style={{
-              background: isActive ? "var(--bg-card)" : "transparent",
-              color: isActive ? "var(--accent)" : "var(--text-muted)",
-              border: isActive ? "1px solid var(--border)" : "1px solid transparent",
-              boxShadow: isActive ? "0 1px 4px rgba(0,0,0,0.15)" : "none",
-            }}
-          >
-            <Icon style={{ width: 12, height: 12 }} />
-            {label}
-          </button>
-        );
-      })}
+    <div className="tab-bar mb-6">
+      {TABS.map(({ id, label, Icon }) => (
+        <button key={id} onClick={() => onChange(id)} className={`tab-item flex-1 justify-center ${active === id ? "active" : ""}`}>
+          <Icon style={{ width: 12, height: 12 }} />
+          {label}
+        </button>
+      ))}
     </div>
   );
 }
@@ -169,8 +156,7 @@ function UrlTab({ onSuccess }) {
           value={url}
           onChange={(e) => setUrl(e.target.value)}
           placeholder="https://example.com/data.csv"
-          className="w-full px-3 py-2.5 rounded-lg text-sm outline-none"
-          style={{ background: "var(--bg-hover)", border: "1px solid var(--border)", color: "var(--text-primary)" }}
+          className="co-input"
         />
         <p className="text-[11px] mt-1" style={{ color: "var(--text-faint)" }}>
           Must be a publicly accessible CSV, Excel, or Parquet file
@@ -184,8 +170,7 @@ function UrlTab({ onSuccess }) {
           value={name}
           onChange={(e) => setName(e.target.value)}
           placeholder="My Dataset"
-          className="w-full px-3 py-2.5 rounded-lg text-sm outline-none"
-          style={{ background: "var(--bg-hover)", border: "1px solid var(--border)", color: "var(--text-primary)" }}
+          className="co-input"
         />
       </div>
       <button
@@ -235,8 +220,7 @@ function SheetsTab({ onSuccess }) {
           value={url}
           onChange={(e) => setUrl(e.target.value)}
           placeholder="https://docs.google.com/spreadsheets/d/..."
-          className="w-full px-3 py-2.5 rounded-lg text-sm outline-none"
-          style={{ background: "var(--bg-hover)", border: "1px solid var(--border)", color: "var(--text-primary)" }}
+          className="co-input"
         />
       </div>
       <div>
@@ -247,8 +231,7 @@ function SheetsTab({ onSuccess }) {
           value={name}
           onChange={(e) => setName(e.target.value)}
           placeholder="My Sheet"
-          className="w-full px-3 py-2.5 rounded-lg text-sm outline-none"
-          style={{ background: "var(--bg-hover)", border: "1px solid var(--border)", color: "var(--text-primary)" }}
+          className="co-input"
         />
       </div>
       <button
@@ -286,7 +269,6 @@ function PostgresTab({ onSuccess }) {
     }
   };
 
-  const fieldStyle = { background: "var(--bg-hover)", border: "1px solid var(--border)", color: "var(--text-primary)" };
   const labelStyle = { color: "var(--text-muted)" };
 
   return (
@@ -319,8 +301,7 @@ function PostgresTab({ onSuccess }) {
         <label className="block text-xs font-medium mb-1.5" style={labelStyle}>SQL Query</label>
         <textarea
           value={form.query} onChange={set("query")} rows={3}
-          className="w-full px-3 py-2.5 rounded-lg text-sm outline-none font-mono resize-none"
-          style={fieldStyle}
+          className="co-input font-mono resize-none"
         />
       </div>
       <div>

@@ -67,10 +67,8 @@ export default function ActivityPage() {
             return (
               <div
                 key={event.id}
-                className="flex items-start gap-4 px-5 py-4 transition-colors"
+                className="table-row-hover flex items-start gap-4 px-5 py-4"
                 style={{ borderBottom: i < events.length - 1 ? "1px solid var(--border)" : "none" }}
-                onMouseEnter={(e) => e.currentTarget.style.background = "var(--bg-hover)"}
-                onMouseLeave={(e) => e.currentTarget.style.background = "transparent"}
               >
                 <div className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5"
                   style={{ background: cfg.bg }}>

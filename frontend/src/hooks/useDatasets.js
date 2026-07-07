@@ -8,6 +8,7 @@ import {
   previewData,
   deleteDataset,
   getTrustHistory,
+  getWorkspaceAnalytics,
 } from "../api/datasets";
 import client from "../api/client";
 
@@ -98,5 +99,12 @@ export function useTrustHistory(id) {
     queryKey: ["trustHistory", id],
     queryFn: () => getTrustHistory(id).then((r) => r.data),
     enabled: !!id,
+  });
+}
+
+export function useWorkspaceAnalytics() {
+  return useQuery({
+    queryKey: ["workspaceAnalytics"],
+    queryFn: () => getWorkspaceAnalytics().then((r) => r.data),
   });
 }

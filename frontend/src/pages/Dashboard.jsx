@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { Upload, Database, AlertTriangle, CheckCircle, TrendingUp, Sparkles, Search } from "lucide-react";
 import { useDatasets } from "../hooks/useDatasets";
 import DatasetCard from "../components/dashboard/DatasetCard";
+import WorkspaceAnalytics from "../components/dashboard/WorkspaceAnalytics";
 
 export default function Dashboard() {
   const [search, setSearch] = useState("");
@@ -65,6 +66,9 @@ export default function Dashboard() {
           </div>
         ))}
       </div>
+
+      {/* Workspace analytics charts */}
+      {!isLoading && total > 0 && <WorkspaceAnalytics />}
 
       {/* Search + tag filters */}
       {total > 0 && (

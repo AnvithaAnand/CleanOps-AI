@@ -55,3 +55,6 @@ export const deleteDataset = (id) =>
 
 export const getTrustHistory = (id) =>
   client.get(`/api/datasets/${id}/trust-history`);
+
+export const getWorkspaceAnalytics = () =>
+  client.get("/api/datasets/analytics");

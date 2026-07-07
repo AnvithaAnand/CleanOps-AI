@@ -87,10 +87,8 @@ export default function IssuesPage() {
         <div className="flex items-center gap-3">
           <Link
             to={`/dataset/${id}`}
-            className="w-8 h-8 flex items-center justify-center rounded-lg transition-all"
-            style={{ background: "var(--bg-hover)", border: `1px solid var(--border)` }}
-            onMouseEnter={(e) => { e.currentTarget.style.borderColor = "var(--border-strong)"; }}
-            onMouseLeave={(e) => { e.currentTarget.style.borderColor = "var(--border)"; }}
+            className="co-card w-8 h-8 flex items-center justify-center"
+            style={{ background: "var(--bg-hover)" }}
           >
             <ArrowLeft style={{ width: 14, height: 14, color: "var(--text-secondary)" }} />
           </Link>
@@ -224,9 +222,7 @@ export default function IssuesPage() {
               >
                 <button
                   onClick={() => setExpandedIssue(isExpanded ? null : issue.id)}
-                  className="w-full px-5 py-4 flex items-center justify-between text-left transition-colors"
-                  onMouseEnter={(e) => { e.currentTarget.style.background = "var(--bg-hover)"; }}
-                  onMouseLeave={(e) => { e.currentTarget.style.background = "transparent"; }}
+                  className="table-row-hover w-full px-5 py-4 flex items-center justify-between text-left"
                 >
                   <div className="flex items-center gap-3">
                     <span

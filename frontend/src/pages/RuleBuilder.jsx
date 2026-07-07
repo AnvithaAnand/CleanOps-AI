@@ -45,16 +45,6 @@ function FormField({ label, children }) {
   );
 }
 
-const inputCss = {
-  background: "var(--bg-hover)",
-  border: "1px solid var(--border)",
-  color: "var(--text-primary)",
-  borderRadius: "0.5rem",
-  padding: "0.5rem 0.75rem",
-  width: "100%",
-  fontSize: "0.875rem",
-  outline: "none",
-};
 
 export default function RuleBuilder() {
   const { data: rules, isLoading } = useRules();
@@ -126,7 +116,7 @@ export default function RuleBuilder() {
               value={form.name}
               onChange={(e) => setForm({ ...form, name: e.target.value })}
               placeholder="e.g., Age must be positive"
-              style={inputCss}
+              className="co-input"
               required
             />
           </FormField>
@@ -136,7 +126,7 @@ export default function RuleBuilder() {
               <select
                 value={form.dataset_id}
                 onChange={(e) => setForm({ ...form, dataset_id: e.target.value })}
-                style={inputCss}
+                className="co-input"
               >
                 <option value="">Global (all)</option>
                 {datasets?.map((d) => <option key={d.id} value={d.id}>{d.name}</option>)}
@@ -148,7 +138,7 @@ export default function RuleBuilder() {
                 value={form.column_name}
                 onChange={(e) => setForm({ ...form, column_name: e.target.value })}
                 placeholder="Column name"
-                style={inputCss}
+                className="co-input"
               />
             </FormField>
           </div>
@@ -158,7 +148,7 @@ export default function RuleBuilder() {
               <select
                 value={form.rule_type}
                 onChange={(e) => setForm({ ...form, rule_type: e.target.value, parameters: {} })}
-                style={inputCss}
+                className="co-input"
               >
                 {RULE_TYPES.map((r) => <option key={r.value} value={r.value}>{r.label}</option>)}
               </select>
@@ -167,7 +157,7 @@ export default function RuleBuilder() {
               <select
                 value={form.severity}
                 onChange={(e) => setForm({ ...form, severity: e.target.value })}
-                style={inputCss}
+                className="co-input"
               >
                 <option value="critical">Critical</option>
                 <option value="warning">Warning</option>
@@ -182,7 +172,7 @@ export default function RuleBuilder() {
                 <select
                   value={form.parameters[p.key] || ""}
                   onChange={(e) => setForm({ ...form, parameters: { ...form.parameters, [p.key]: e.target.value } })}
-                  style={inputCss}
+                  className="co-input"
                 >
                   <option value="">Select...</option>
                   {p.options.map((o) => <option key={o} value={o}>{o}</option>)}
@@ -193,7 +183,7 @@ export default function RuleBuilder() {
                   value={form.parameters[p.key] || ""}
                   onChange={(e) => setForm({ ...form, parameters: { ...form.parameters, [p.key]: e.target.value } })}
                   placeholder={p.label}
-                  style={inputCss}
+                  className="co-input"
                 />
               )}
             </FormField>
@@ -263,10 +253,8 @@ export default function RuleBuilder() {
               return (
                 <div
                   key={rule.id}
-                  className="flex items-center justify-between p-3 rounded-xl transition-all"
-                  style={{ background: "var(--bg-hover)", border: "1px solid var(--border)" }}
-                  onMouseEnter={(e) => { e.currentTarget.style.borderColor = "var(--border-strong)"; }}
-                  onMouseLeave={(e) => { e.currentTarget.style.borderColor = "var(--border)"; }}
+                  className="co-card flex items-center justify-between p-3"
+                  style={{ background: "var(--bg-hover)" }}
                 >
                   <div>
                     <p className="text-sm font-medium" style={{ color: "var(--text-primary)" }}>{rule.name}</p>
@@ -283,10 +271,7 @@ export default function RuleBuilder() {
                     </span>
                     <button
                       onClick={() => { if (confirm("Delete this rule?")) deleteRule.mutate(rule.id); }}
-                      className="w-6 h-6 flex items-center justify-center rounded transition-all"
-                      style={{ color: "var(--text-faint)" }}
-                      onMouseEnter={(e) => { e.currentTarget.style.color = "#ef4444"; }}
-                      onMouseLeave={(e) => { e.currentTarget.style.color = "var(--text-faint)"; }}
+                      className="btn-danger-ghost w-6 h-6"
                     >
                       <Trash2 style={{ width: 13, height: 13 }} />
                     </button>
