@@ -1,7 +1,8 @@
 import { useState } from "react";
-import { Bell, Trash2, ToggleLeft, ToggleRight, Plus, Zap, AlertTriangle, Info, Loader2, X, Mail, Send, CheckCircle2 } from "lucide-react";
+import { Bell, Trash2, ToggleLeft, ToggleRight, Plus, Zap, AlertTriangle, Info, Loader2, X, Mail, Send, CheckCircle2, Webhook, Eye, EyeOff, CheckCircle, XCircle } from "lucide-react";
 import { useAlerts, useAlertRules, useDeleteAlert, useMarkRead, useToggleRule, useDeleteRule, useCreateRule } from "../hooks/useAlerts";
 import { useNotificationSettings, useUpdateNotificationSettings, useSendTestNotification } from "../hooks/useNotifications";
+import { useWebhooks, useWebhookEvents, useCreateWebhook, useToggleWebhook, useTestWebhook, useDeleteWebhook } from "../hooks/useWebhooks";
 import { formatDate } from "../lib/utils";
 
 const severityConfig = {
@@ -262,6 +263,7 @@ export default function AlertsPage() {
           { id: "alerts",        label: `Alerts (${alerts.length})` },
           { id: "rules",         label: `Rules (${rules.length})` },
           { id: "notifications", label: "Notifications" },
+          { id: "webhooks",      label: "Webhooks" },
         ].map(({ id, label }) => (
           <button key={id} onClick={() => setView(id)} className={`tab-item ${view === id ? "active" : ""}`}>
             {label}
@@ -368,6 +370,230 @@ export default function AlertsPage() {
       )}
 
       {view === "notifications" && <NotificationsTab />}
+      {view === "webhooks"      && <WebhooksTab />}
+    </div>
+  );
+}
+
+/* ── Webhooks Tab ─────────────────────────────────────────────── */
+const ALL_EVENTS = [
+  { id: "scan.completed",    label: "Scan completed" },
+  { id: "repair.completed",  label: "Repair completed" },
+  { id: "alert.fired",       label: "Alert fired" },
+  { id: "drift.detected",    label: "Drift detected" },
+  { id: "contract.violated", label: "Contract violated" },
+];
+
+function WebhooksTab() {
+  const { data: hooks = [], isLoading } = useWebhooks();
+  const create   = useCreateWebhook();
+  const toggle   = useToggleWebhook();
+  const testHook = useTestWebhook();
+  const del      = useDeleteWebhook();
+
+  const [showForm, setShowForm] = useState(false);
+  const [form, setForm] = useState({ name: "", url: "", secret: "", events: [] });
+  const [showSecret, setShowSecret] = useState(false);
+  const [testResults, setTestResults] = useState({});
+
+  const set = (k) => (e) => setForm((f) => ({ ...f, [k]: e.target.value }));
+  const toggleEvent = (ev) =>
+    setForm((f) => ({
+      ...f,
+      events: f.events.includes(ev) ? f.events.filter((e) => e !== ev) : [...f.events, ev],
+    }));
+
+  const handleCreate = async () => {
+    if (!form.name.trim() || !form.url.trim()) return;
+    await create.mutateAsync({
+      name: form.name.trim(),
+      url: form.url.trim(),
+      events: form.events,
+      secret: form.secret.trim() || null,
+    });
+    setForm({ name: "", url: "", secret: "", events: [] });
+    setShowForm(false);
+  };
+
+  const handleTest = async (id) => {
+    const res = await testHook.mutateAsync(id);
+    setTestResults((prev) => ({ ...prev, [id]: res }));
+    setTimeout(() => setTestResults((prev) => { const n = { ...prev }; delete n[id]; return n; }), 4000);
+  };
+
+  return (
+    <div className="space-y-4">
+      {/* Header */}
+      <div className="flex items-center justify-between">
+        <div>
+          <p className="text-xs font-semibold" style={{ color: "var(--text-primary)" }}>Outbound Webhooks</p>
+          <p className="text-xs mt-0.5" style={{ color: "var(--text-muted)" }}>
+            POST JSON to your endpoints when platform events fire
+          </p>
+        </div>
+        <button onClick={() => setShowForm((v) => !v)} className="btn-primary" style={{ padding: "0.375rem 0.875rem" }}>
+          <Plus style={{ width: 12, height: 12 }} />
+          {showForm ? "Cancel" : "Add Endpoint"}
+        </button>
+      </div>
+
+      {/* Create form */}
+      {showForm && (
+        <div className="rounded-xl p-4 space-y-3" style={{ background: "var(--bg-card)", border: "1px solid var(--accent-border)" }}>
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="block text-xs font-medium mb-1.5" style={{ color: "var(--text-muted)" }}>Name</label>
+              <input value={form.name} onChange={set("name")} placeholder="e.g. Slack alerts" className="co-input" />
+            </div>
+            <div>
+              <label className="block text-xs font-medium mb-1.5" style={{ color: "var(--text-muted)" }}>Endpoint URL</label>
+              <input value={form.url} onChange={set("url")} placeholder="https://hooks.example.com/..." className="co-input" />
+            </div>
+          </div>
+          <div>
+            <label className="block text-xs font-medium mb-1.5" style={{ color: "var(--text-muted)" }}>
+              Signing secret <span style={{ color: "var(--text-faint)" }}>(optional — sent as X-CleanOps-Signature)</span>
+            </label>
+            <div className="relative">
+              <input
+                type={showSecret ? "text" : "password"}
+                value={form.secret}
+                onChange={set("secret")}
+                placeholder="Leave blank to skip signing"
+                className="co-input pr-9"
+              />
+              <button type="button" onClick={() => setShowSecret((v) => !v)}
+                className="absolute right-2.5 top-1/2 -translate-y-1/2"
+                style={{ color: "var(--text-faint)" }}>
+                {showSecret
+                  ? <EyeOff style={{ width: 13, height: 13 }} />
+                  : <Eye    style={{ width: 13, height: 13 }} />}
+              </button>
+            </div>
+          </div>
+          <div>
+            <label className="block text-xs font-medium mb-2" style={{ color: "var(--text-muted)" }}>
+              Subscribe to events <span style={{ color: "var(--text-faint)" }}>(empty = all events)</span>
+            </label>
+            <div className="flex flex-wrap gap-2">
+              {ALL_EVENTS.map(({ id, label }) => {
+                const on = form.events.includes(id);
+                return (
+                  <button key={id} type="button" onClick={() => toggleEvent(id)}
+                    className="text-[11px] font-medium px-2.5 py-1 rounded-full transition-all"
+                    style={{
+                      background: on ? "var(--accent-bg)" : "var(--bg-hover)",
+                      color: on ? "var(--accent-light)" : "var(--text-muted)",
+                      border: `1px solid ${on ? "var(--accent-border)" : "var(--border)"}`,
+                    }}>
+                    {label}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+          <button onClick={handleCreate} disabled={!form.name || !form.url || create.isPending}
+            className="btn-primary disabled:opacity-40">
+            {create.isPending ? <><Loader2 style={{ width: 12, height: 12 }} className="animate-spin" />Creating…</> : "Create Endpoint"}
+          </button>
+        </div>
+      )}
+
+      {/* Endpoint list */}
+      {isLoading ? (
+        <div className="h-24 shimmer rounded-xl" />
+      ) : hooks.length === 0 ? (
+        <div className="py-14 text-center rounded-xl" style={{ background: "var(--bg-card)", border: "1px solid var(--border)" }}>
+          <Webhook style={{ width: 28, height: 28, color: "var(--text-faint)", margin: "0 auto 10px" }} />
+          <p className="text-sm font-medium" style={{ color: "var(--text-primary)" }}>No endpoints yet</p>
+          <p className="text-xs mt-1" style={{ color: "var(--text-muted)" }}>Add an endpoint above to start receiving events</p>
+        </div>
+      ) : (
+        <div className="rounded-2xl overflow-hidden" style={{ background: "var(--bg-card)", border: "1px solid var(--border)" }}>
+          {hooks.map((hook, i) => {
+            const result = testResults[hook.id];
+            return (
+              <div key={hook.id} className="px-5 py-4 flex items-start gap-4"
+                style={{ borderBottom: i < hooks.length - 1 ? "1px solid var(--border)" : "none" }}>
+                {/* Status dot */}
+                <div className="mt-1 w-2 h-2 rounded-full flex-shrink-0"
+                  style={{ background: hook.is_active ? "var(--success)" : "var(--text-faint)" }} />
+                {/* Info */}
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <p className="text-sm font-semibold" style={{ color: "var(--text-primary)" }}>{hook.name}</p>
+                    {hook.has_secret && (
+                      <span className="text-[10px] px-1.5 py-0.5 rounded font-medium"
+                        style={{ background: "var(--success-bg)", color: "var(--success)", border: "1px solid var(--success-border)" }}>
+                        signed
+                      </span>
+                    )}
+                    {!hook.is_active && (
+                      <span className="text-[10px] px-1.5 py-0.5 rounded font-medium"
+                        style={{ background: "var(--bg-hover)", color: "var(--text-faint)" }}>
+                        paused
+                      </span>
+                    )}
+                  </div>
+                  <p className="text-xs mt-0.5 font-mono truncate max-w-xs" style={{ color: "var(--text-muted)" }}>
+                    {hook.url}
+                  </p>
+                  {hook.events.length > 0 && (
+                    <div className="flex flex-wrap gap-1 mt-1.5">
+                      {hook.events.map((ev) => (
+                        <span key={ev} className="text-[10px] px-1.5 py-0.5 rounded"
+                          style={{ background: "var(--accent-bg)", color: "var(--accent-light)" }}>
+                          {ev}
+                        </span>
+                      ))}
+                    </div>
+                  )}
+                  {result && (
+                    <div className="flex items-center gap-1.5 mt-1.5">
+                      {result.ok
+                        ? <CheckCircle style={{ width: 11, height: 11, color: "var(--success)" }} />
+                        : <XCircle    style={{ width: 11, height: 11, color: "var(--danger)" }} />}
+                      <span className="text-[11px]" style={{ color: result.ok ? "var(--success)" : "var(--danger)" }}>
+                        {result.ok ? `Delivered (${result.status_code})` : `Failed — ${result.error || result.status_code}`}
+                      </span>
+                    </div>
+                  )}
+                </div>
+                {/* Actions */}
+                <div className="flex items-center gap-1.5 flex-shrink-0">
+                  <button onClick={() => handleTest(hook.id)} disabled={testHook.isPending}
+                    className="text-[11px] font-medium px-2.5 py-1.5 rounded-lg transition-all disabled:opacity-40"
+                    style={{ background: "var(--bg-hover)", color: "var(--text-secondary)", border: "1px solid var(--border)" }}>
+                    {testHook.isPending && testHook.variables === hook.id ? "…" : "Test"}
+                  </button>
+                  <button onClick={() => toggle.mutate({ id: hook.id, is_active: !hook.is_active })}
+                    title={hook.is_active ? "Pause" : "Resume"}>
+                    {hook.is_active
+                      ? <ToggleRight style={{ width: 20, height: 20, color: "var(--success)" }} />
+                      : <ToggleLeft  style={{ width: 20, height: 20, color: "var(--text-faint)" }} />}
+                  </button>
+                  <button onClick={() => del.mutate(hook.id)} className="btn-danger-ghost w-7 h-7">
+                    <Trash2 style={{ width: 13, height: 13 }} />
+                  </button>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
+
+      {/* Info box */}
+      <div className="rounded-xl p-3 text-xs leading-relaxed"
+        style={{ background: "var(--bg-hover)", border: "1px solid var(--border)" }}>
+        <span className="font-semibold" style={{ color: "var(--text-primary)" }}>Events fire as POST with JSON. </span>
+        <span style={{ color: "var(--text-muted)" }}>
+          If a signing secret is set, each request includes an{" "}
+          <code style={{ background: "var(--accent-bg)", padding: "1px 4px", borderRadius: 3, color: "var(--accent-light)" }}>
+            X-CleanOps-Signature: sha256=…
+          </code>{" "}
+          header you can verify on your server.
+        </span>
+      </div>
     </div>
   );
 }
