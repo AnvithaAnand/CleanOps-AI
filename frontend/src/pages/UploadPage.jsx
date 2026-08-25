@@ -246,6 +246,8 @@ function SheetsTab({ onSuccess }) {
   );
 }
 
+const fieldStyle = { background: "var(--bg-hover)", border: "1px solid var(--border)", color: "var(--text-primary)" };
+
 function PostgresTab({ onSuccess }) {
   const [form, setForm] = useState({ host: "", port: "5432", database: "", username: "", password: "", query: "SELECT * FROM table_name LIMIT 10000", name: "" });
   const [loading, setLoading] = useState(false);

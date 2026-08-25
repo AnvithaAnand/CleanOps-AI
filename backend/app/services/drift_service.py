@@ -7,11 +7,11 @@ from app.models.profile import ColumnProfile
 
 def _profile_to_stats(p: ColumnProfile) -> dict:
     return {
-        "data_type": p.data_type,
+        "data_type": p.detected_type,
         "null_count": p.null_count,
         "null_percentage": p.null_percentage,
         "unique_count": p.unique_count,
-        "mean": p.mean,
+        "mean": p.mean_value,
         "std_dev": p.std_dev,
         "min_value": p.min_value,
         "max_value": p.max_value,
@@ -77,15 +77,15 @@ async def detect_drift(db: AsyncSession, dataset_id: str,
             continue
 
         # Type change
-        if base["data_type"] and curr_profile.data_type and base["data_type"] != curr_profile.data_type:
+        if base["data_type"] and curr_profile.detected_type and base["data_type"] != curr_profile.detected_type:
             reports.append(DriftReport(
                 dataset_id=dataset_id,
                 drift_type="schema",
                 severity="high",
                 column_name=col,
-                description=f"Column '{col}' type changed from {base['data_type']} to {curr_profile.data_type}",
+                description=f"Column '{col}' type changed from {base['data_type']} to {curr_profile.detected_type}",
                 baseline_value=base["data_type"],
-                current_value=curr_profile.data_type,
+                current_value=curr_profile.detected_type,
             ))
 
         # Null rate drift (>10pp change)
@@ -107,7 +107,7 @@ async def detect_drift(db: AsyncSession, dataset_id: str,
 
         # Mean drift for numeric columns (>20% relative change)
         base_mean = base.get("mean")
-        curr_mean = curr_profile.mean
+        curr_mean = curr_profile.mean_value
         if base_mean is not None and curr_mean is not None and base_mean != 0:
             rel_change = abs(curr_mean - base_mean) / abs(base_mean)
             if rel_change > 0.20:
