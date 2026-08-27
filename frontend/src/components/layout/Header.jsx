@@ -9,7 +9,7 @@ function DatasetBreadcrumb({ id }) {
   const { data: dataset } = useDataset(id);
   return (
     <div>
-      <p className="text-xs" style={{ color: "var(--text-faint)" }}>Dataset Explorer</p>
+      <p className="text-[10px] font-medium uppercase tracking-wider" style={{ color: "var(--text-faint)" }}>Dataset Explorer</p>
       <h2 className="text-sm font-semibold leading-tight truncate max-w-xs mt-0.5" style={{ color: "var(--text-primary)" }}>
         {dataset?.name || "Loading…"}
       </h2>
@@ -35,11 +35,12 @@ export default function Header() {
   const info = PAGE_TITLES[pathname];
 
   return (
-    <header className="h-14 flex items-center justify-between px-5 flex-shrink-0"
+    <header className="h-14 flex items-center justify-between px-6 flex-shrink-0"
       style={{
-        background: isDark ? "rgba(10,15,30,0.95)" : "rgba(248,250,252,0.95)",
+        background: isDark ? "rgba(6,9,26,0.85)" : "rgba(248,250,252,0.85)",
         borderBottom: "1px solid var(--border)",
-        backdropFilter: "blur(12px)",
+        backdropFilter: "blur(16px)",
+        WebkitBackdropFilter: "blur(16px)",
       }}>
 
       {/* Left — title */}
@@ -49,7 +50,7 @@ export default function Header() {
         ) : info ? (
           <div>
             <h2 className="text-sm font-semibold" style={{ color: "var(--text-primary)" }}>{info.title}</h2>
-            <p className="text-xs mt-0.5" style={{ color: "var(--text-faint)" }}>{info.sub}</p>
+            <p className="text-[10px] mt-0.5 font-medium" style={{ color: "var(--text-faint)" }}>{info.sub}</p>
           </div>
         ) : (
           <h2 className="text-sm font-semibold" style={{ color: "var(--text-primary)" }}>CleanOps AI</h2>
@@ -57,9 +58,9 @@ export default function Header() {
       </div>
 
       {/* Right — actions */}
-      <div className="flex items-center gap-1.5">
+      <div className="flex items-center gap-2">
         <button onClick={toggle} title={isDark ? "Light mode" : "Dark mode"} className="icon-btn"
-          style={{ border: "1px solid var(--border)" }}>
+          style={{ border: "1px solid var(--border)", borderRadius: "0.625rem" }}>
           {isDark
             ? <Sun  style={{ width: 14, height: 14 }} />
             : <Moon style={{ width: 14, height: 14 }} />}
@@ -68,7 +69,7 @@ export default function Header() {
         <JobStatusIndicator />
         <AlertBell />
 
-        <Link to="/upload" className="btn-primary" style={{ padding: "0.375rem 0.875rem" }}>
+        <Link to="/upload" className="btn-primary" style={{ padding: "0.375rem 0.875rem", textDecoration: "none" }}>
           <Upload style={{ width: 13, height: 13 }} />
           Upload
         </Link>

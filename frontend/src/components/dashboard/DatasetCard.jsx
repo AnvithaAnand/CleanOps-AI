@@ -58,7 +58,7 @@ export default function DatasetCard({ dataset }) {
   return (
     <Link
       to={`/dataset/${dataset.id}`}
-      className="co-card co-card-lift block p-5 group relative"
+      className="glow-card block p-5 group relative"
       style={{ textDecoration: "none" }}
     >
       {/* Top */}

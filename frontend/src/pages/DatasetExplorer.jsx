@@ -36,7 +36,7 @@ const tabs = [
 ];
 
 const C = {
-  card:    { background: "var(--bg-card)",   border: "1px solid var(--border)",       borderRadius: "0.75rem" },
+  card:    { background: "var(--bg-card)",   border: "1px solid var(--border)",       borderRadius: "1rem" },
   muted:   { color: "var(--text-muted)" },
   primary: { color: "var(--text-primary)" },
   accent:  { color: "var(--accent)" },

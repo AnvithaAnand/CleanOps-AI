@@ -5,14 +5,14 @@ import {
 import { useWorkspaceAnalytics } from "../../hooks/useDatasets";
 
 const TIER_COLORS = {
-  Excellent: "#10b981",
+  Excellent: "#34d399",
   Good:      "#22d3ee",
-  Fair:      "#f59e0b",
-  Poor:      "#f97316",
-  Critical:  "#ef4444",
+  Fair:      "#fbbf24",
+  Poor:      "#fb923c",
+  Critical:  "#f87171",
 };
 
-const ISSUE_COLOR = "#6366f1";
+const ISSUE_COLOR = "#818cf8";
 
 function PieTooltip({ active, payload }) {
   if (!active || !payload?.length) return null;
@@ -58,7 +58,7 @@ export default function WorkspaceAnalytics() {
     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
 
       {/* Trust score distribution */}
-      <div className="rounded-xl p-4" style={{ background: "var(--bg-card)", border: "1px solid var(--border)" }}>
+      <div className="glow-card p-5">
         <p className="text-xs font-semibold mb-3" style={{ color: "var(--text-primary)" }}>Score Distribution</p>
         {hasScores ? (
           <div className="flex items-center gap-4">
@@ -91,7 +91,7 @@ export default function WorkspaceAnalytics() {
       </div>
 
       {/* Issues by type */}
-      <div className="rounded-xl p-4" style={{ background: "var(--bg-card)", border: "1px solid var(--border)" }}>
+      <div className="glow-card p-5">
         <p className="text-xs font-semibold mb-3" style={{ color: "var(--text-primary)" }}>Open Issues by Type</p>
         {hasIssues ? (
           <ResponsiveContainer width="100%" height={110}>

@@ -331,18 +331,18 @@ export default function UploadPage() {
   return (
     <div className="max-w-3xl mx-auto space-y-5 animate-fade-in">
       <div
-        className="rounded-2xl overflow-hidden"
+        className="rounded-2xl overflow-hidden relative"
         style={{ background: "var(--bg-card)", border: `1px solid var(--border)` }}
       >
-        <div className="h-1 w-full" style={{ background: "linear-gradient(90deg, #6366f1, #8b5cf6, #06b6d4)" }} />
+        <div className="h-1 w-full animate-gradient" style={{ background: "linear-gradient(90deg, #818cf8, #a78bfa, #22d3ee, #818cf8)", backgroundSize: "200% 100%" }} />
 
         <div className="p-8">
           <div className="text-center mb-7">
             <div
-              className="w-14 h-14 rounded-2xl flex items-center justify-center mx-auto mb-4"
-              style={{ background: "var(--accent-bg)", border: `1px solid var(--accent-border)` }}
+              className="w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-4"
+              style={{ background: "linear-gradient(135deg, var(--accent-bg), rgba(168,85,247,0.1))", border: `1px solid var(--accent-border)`, boxShadow: "var(--glow-sm)" }}
             >
-              <FileUp style={{ width: 24, height: 24, color: "var(--accent)" }} />
+              <FileUp style={{ width: 26, height: 26, color: "var(--accent)" }} />
             </div>
             <h2 className="text-xl font-bold" style={{ color: "var(--text-primary)" }}>Add Dataset</h2>
             <p className="text-sm mt-1" style={{ color: "var(--text-muted)" }}>Upload a file or connect to a data source</p>
@@ -357,14 +357,13 @@ export default function UploadPage() {
         </div>
       </div>
 
-      <div className="grid grid-cols-2 gap-3">
+      <div className="grid grid-cols-2 gap-3 stagger-children">
         {FEATURES.map(({ icon, title, desc }) => (
-          <div key={title} className="rounded-xl p-4 flex items-start gap-3"
-            style={{ background: "var(--bg-card)", border: `1px solid var(--border)` }}>
+          <div key={title} className="glow-card p-4 flex items-start gap-3">
             <span className="text-lg flex-shrink-0 mt-0.5">{icon}</span>
             <div>
               <p className="text-xs font-semibold" style={{ color: "var(--text-primary)" }}>{title}</p>
-              <p className="text-[11px] mt-0.5" style={{ color: "var(--text-muted)" }}>{desc}</p>
+              <p className="text-[11px] mt-0.5 leading-relaxed" style={{ color: "var(--text-muted)" }}>{desc}</p>
             </div>
           </div>
         ))}
