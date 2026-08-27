@@ -5,7 +5,6 @@ from app.config import settings
 
 
 def _make_async_url(url: str) -> str:
-    # Railway provides postgresql:// — SQLAlchemy async needs postgresql+asyncpg://
     if url.startswith("postgresql://"):
         return url.replace("postgresql://", "postgresql+asyncpg://", 1)
     if url.startswith("postgres://"):

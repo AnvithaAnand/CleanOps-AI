@@ -9,7 +9,7 @@ class Settings(BaseSettings):
         return self.DATABASE_URL.strip()
     UPLOAD_DIR: str = "./uploads"
     GEMINI_API_KEY: str = ""
-    CORS_ORIGINS: str = "http://localhost:5173"
+    CORS_ORIGINS: str = "*"
     MAX_UPLOAD_SIZE_MB: int = 200
     JWT_SECRET_KEY: str = "changeme-use-a-real-secret-in-production"
     JWT_ALGORITHM: str = "HS256"
