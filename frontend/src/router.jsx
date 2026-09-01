@@ -12,6 +12,8 @@ import LoginPage from "./pages/LoginPage";
 import SignupPage from "./pages/SignupPage";
 import UsersPage from "./pages/UsersPage";
 import ActivityPage from "./pages/ActivityPage";
+import NotFoundPage from "./pages/NotFoundPage";
+import SettingsPage from "./pages/SettingsPage";
 
 export const router = createBrowserRouter([
   { path: "/login",  element: <LoginPage /> },
@@ -28,7 +30,9 @@ export const router = createBrowserRouter([
       { path: "rules", element: <RuleBuilder /> },
       { path: "alerts", element: <AlertsPage /> },
       { path: "activity", element: <ActivityPage /> },
+      { path: "settings", element: <SettingsPage /> },
       { path: "users", element: <ProtectedRoute requiredRole="admin"><UsersPage /></ProtectedRoute> },
+      { path: "*", element: <NotFoundPage /> },
     ],
   },
 ]);

@@ -18,6 +18,7 @@ VALID_EVENTS = [
     "alert.fired",
     "drift.detected",
     "contract.violated",
+    "trust_score.dropped",
 ]
 
 

@@ -49,10 +49,10 @@ async def generate_excel_report(db: AsyncSession, dataset_id: str) -> bytes:
             for p in profiles:
                 profile_rows.append({
                     "Column": p.column_name,
-                    "Type": p.inferred_type,
+                    "Type": p.detected_type,
                     "Null %": f"{p.null_percentage:.1f}%" if p.null_percentage is not None else "—",
                     "Unique %": f"{p.unique_percentage:.1f}%" if p.unique_percentage is not None else "—",
-                    "Mean": f"{p.mean:.2f}" if p.mean is not None else "—",
+                    "Mean": f"{p.mean_value:.2f}" if p.mean_value is not None else "—",
                     "Std Dev": f"{p.std_dev:.2f}" if p.std_dev is not None else "—",
                     "Min": p.min_value or "—",
                     "Max": p.max_value or "—",
@@ -67,7 +67,7 @@ async def generate_excel_report(db: AsyncSession, dataset_id: str) -> bytes:
                     "Issue Type": i.issue_type,
                     "Severity": i.severity,
                     "Description": i.description,
-                    "Affected Rows": i.affected_rows or "—",
+                    "Affected Count": i.affected_count or "—",
                 }
                 for i in issues
             ]
@@ -173,9 +173,9 @@ async def generate_pdf_report(db: AsyncSession, dataset_id: str) -> bytes:
         for p in profiles:
             null_pct = f"{p.null_percentage:.1f}%" if p.null_percentage is not None else "—"
             unique_pct = f"{p.unique_percentage:.1f}%" if p.unique_percentage is not None else "—"
-            mean = f"{p.mean:.2f}" if p.mean is not None else "—"
+            mean = f"{p.mean_value:.2f}" if p.mean_value is not None else "—"
             minmax = f"{p.min_value or '—'} / {p.max_value or '—'}"
-            for val, w in [(p.column_name[:18], 40), (p.inferred_type or "—", 25), (null_pct, 20), (unique_pct, 20), (mean, 25), (minmax[:24], 50)]:
+            for val, w in [(p.column_name[:18], 40), (p.detected_type or "—", 25), (null_pct, 20), (unique_pct, 20), (mean, 25), (minmax[:24], 50)]:
                 pdf.cell(w, 5, str(val), new_x="RIGHT", new_y="TOP")
             pdf.ln(5)
 

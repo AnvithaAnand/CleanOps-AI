@@ -38,8 +38,8 @@ export const downloadDataset = (id, version) =>
     responseType: "blob",
   });
 
-export const previewData = (id, rows = 100) =>
-  client.get(`/api/datasets/${id}/preview`, { params: { rows } });
+export const previewData = (id, rows = 100, offset = 0) =>
+  client.get(`/api/datasets/${id}/preview`, { params: { rows, offset } });
 
 export const importFromUrl = (body) =>
   client.post("/api/datasets/import/url", body);

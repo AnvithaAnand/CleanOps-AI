@@ -1,5 +1,6 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends
 
+from app.auth import get_current_user
 from app.api.ai import router as ai_router
 from app.api.alerts import router as alerts_router
 from app.api.auth_router import router as auth_router
@@ -15,18 +16,20 @@ from app.api.health import router as health_router
 from app.api.jobs import router as jobs_router
 from app.api.rules import router as rules_router
 
+_auth = [Depends(get_current_user)]
+
 api_router = APIRouter()
 api_router.include_router(health_router)
 api_router.include_router(auth_router)
-api_router.include_router(datasets_router)
-api_router.include_router(rules_router)
-api_router.include_router(ai_router)
-api_router.include_router(jobs_router)
-api_router.include_router(alerts_router)
-api_router.include_router(contracts_router)
-api_router.include_router(schedules_router)
-api_router.include_router(pipeline_router)
-api_router.include_router(activity_router)
-api_router.include_router(auto_repair_router)
-api_router.include_router(notifications_router)
-api_router.include_router(webhooks_router)
+api_router.include_router(datasets_router, dependencies=_auth)
+api_router.include_router(rules_router, dependencies=_auth)
+api_router.include_router(ai_router, dependencies=_auth)
+api_router.include_router(jobs_router, dependencies=_auth)
+api_router.include_router(alerts_router, dependencies=_auth)
+api_router.include_router(contracts_router, dependencies=_auth)
+api_router.include_router(schedules_router, dependencies=_auth)
+api_router.include_router(pipeline_router, dependencies=_auth)
+api_router.include_router(activity_router, dependencies=_auth)
+api_router.include_router(auto_repair_router, dependencies=_auth)
+api_router.include_router(notifications_router, dependencies=_auth)
+api_router.include_router(webhooks_router, dependencies=_auth)

@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Depends, HTTPException, status
-from pydantic import BaseModel, EmailStr
+from pydantic import BaseModel, EmailStr, field_validator
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -12,13 +12,20 @@ router = APIRouter(prefix="/api/auth", tags=["auth"])
 
 
 class SignupRequest(BaseModel):
-    email: str
+    email: EmailStr
     password: str
     full_name: str
 
+    @field_validator("password")
+    @classmethod
+    def validate_password(cls, v):
+        if len(v) < 8:
+            raise ValueError("Password must be at least 8 characters")
+        return v
+
 
 class LoginRequest(BaseModel):
-    email: str
+    email: EmailStr
     password: str
 
 
@@ -104,6 +111,38 @@ async def update_role(
     user.role = body.role
     await db.commit()
     return _user_dict(user)
+
+
+class ProfileUpdate(BaseModel):
+    full_name: str | None = None
+    current_password: str | None = None
+    new_password: str | None = None
+
+    @field_validator("new_password")
+    @classmethod
+    def validate_new_password(cls, v):
+        if v is not None and len(v) < 8:
+            raise ValueError("New password must be at least 8 characters")
+        return v
+
+
+@router.put("/me")
+async def update_profile(
+    body: ProfileUpdate,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    if body.full_name is not None:
+        current_user.full_name = body.full_name
+    if body.new_password:
+        if not body.current_password:
+            raise HTTPException(400, "Current password is required to set a new password")
+        if not verify_password(body.current_password, current_user.hashed_password):
+            raise HTTPException(400, "Current password is incorrect")
+        current_user.hashed_password = hash_password(body.new_password)
+    await db.commit()
+    await db.refresh(current_user)
+    return _user_dict(current_user)
 
 
 @router.put("/users/{user_id}/active")

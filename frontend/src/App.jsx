@@ -1,8 +1,10 @@
 import { RouterProvider } from "react-router-dom";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { Toaster } from "sonner";
 import { router } from "./router";
-import { ThemeProvider } from "./contexts/ThemeContext";
+import { ThemeProvider, useTheme } from "./contexts/ThemeContext";
 import { AuthProvider } from "./contexts/AuthContext";
+import ErrorBoundary from "./components/ErrorBoundary";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -10,12 +12,35 @@ const queryClient = new QueryClient({
   },
 });
 
+function ThemedToaster() {
+  const { theme } = useTheme();
+  return (
+    <Toaster
+      theme={theme}
+      position="top-right"
+      toastOptions={{
+        style: {
+          background: "var(--bg-card)",
+          border: "1px solid var(--border)",
+          color: "var(--text-primary)",
+          fontSize: "0.8125rem",
+        },
+      }}
+      richColors
+      closeButton
+    />
+  );
+}
+
 export default function App() {
   return (
     <ThemeProvider>
       <AuthProvider>
         <QueryClientProvider client={queryClient}>
-          <RouterProvider router={router} />
+          <ErrorBoundary>
+            <RouterProvider router={router} />
+          </ErrorBoundary>
+          <ThemedToaster />
         </QueryClientProvider>
       </AuthProvider>
     </ThemeProvider>

@@ -90,9 +90,7 @@ function GateSection({ datasetId }) {
 
 function CurlSnippet({ datasetId, threshold }) {
   const [copied, setCopied] = useState(false);
-  const base = window.location.origin.includes("localhost")
-    ? "http://localhost:8000"
-    : "https://cleanops-ai.onrender.com";
+  const base = import.meta.env.VITE_API_URL || window.location.origin;
   const cmd = `curl -f "${base}/api/pipeline/gate/${datasetId}?min_trust_score=${threshold}"`;
 
   const copy = () => {

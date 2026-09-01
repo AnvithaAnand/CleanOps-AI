@@ -1,5 +1,5 @@
 import { useLocation, Link, useParams } from "react-router-dom";
-import { Upload, Moon, Sun } from "lucide-react";
+import { Upload, Moon, Sun, Menu } from "lucide-react";
 import { useTheme } from "../../contexts/ThemeContext";
 import { useDataset } from "../../hooks/useDatasets";
 import JobStatusIndicator from "../jobs/JobStatusIndicator";
@@ -24,9 +24,10 @@ const PAGE_TITLES = {
   "/alerts":   { title: "Alerts",          sub: "Quality signals and rule management" },
   "/users":    { title: "User Management", sub: "Roles and access control" },
   "/activity": { title: "Team Activity",   sub: "All dataset actions across your workspace" },
+  "/settings": { title: "Settings",        sub: "Manage your profile and preferences" },
 };
 
-export default function Header() {
+export default function Header({ onMenuToggle }) {
   const { pathname } = useLocation();
   const params = useParams();
   const { theme, toggle } = useTheme();
@@ -35,7 +36,7 @@ export default function Header() {
   const info = PAGE_TITLES[pathname];
 
   return (
-    <header className="h-14 flex items-center justify-between px-6 flex-shrink-0"
+    <header className="h-14 flex items-center justify-between px-4 sm:px-6 flex-shrink-0"
       style={{
         background: isDark ? "rgba(6,9,26,0.85)" : "rgba(248,250,252,0.85)",
         borderBottom: "1px solid var(--border)",
@@ -43,14 +44,19 @@ export default function Header() {
         WebkitBackdropFilter: "blur(16px)",
       }}>
 
-      {/* Left — title */}
-      <div>
+      {/* Left — hamburger + title */}
+      <div className="flex items-center gap-3">
+        <button onClick={onMenuToggle} className="lg:hidden icon-btn"
+          style={{ border: "1px solid var(--border)", borderRadius: "0.625rem" }}>
+          <Menu style={{ width: 16, height: 16 }} />
+        </button>
+
         {isDatasetRoute && params.id ? (
           <DatasetBreadcrumb id={params.id} />
         ) : info ? (
           <div>
             <h2 className="text-sm font-semibold" style={{ color: "var(--text-primary)" }}>{info.title}</h2>
-            <p className="text-[10px] mt-0.5 font-medium" style={{ color: "var(--text-faint)" }}>{info.sub}</p>
+            <p className="text-[10px] mt-0.5 font-medium hidden sm:block" style={{ color: "var(--text-faint)" }}>{info.sub}</p>
           </div>
         ) : (
           <h2 className="text-sm font-semibold" style={{ color: "var(--text-primary)" }}>CleanOps AI</h2>
@@ -69,7 +75,7 @@ export default function Header() {
         <JobStatusIndicator />
         <AlertBell />
 
-        <Link to="/upload" className="btn-primary" style={{ padding: "0.375rem 0.875rem", textDecoration: "none" }}>
+        <Link to="/upload" className="btn-primary hidden sm:flex" style={{ padding: "0.375rem 0.875rem", textDecoration: "none" }}>
           <Upload style={{ width: 13, height: 13 }} />
           Upload
         </Link>

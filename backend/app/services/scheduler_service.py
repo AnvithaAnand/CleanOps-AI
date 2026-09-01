@@ -7,6 +7,7 @@ from sqlalchemy import select
 from app.database import async_session
 from app.models.schedule import ScanSchedule
 from app.models.dataset import Dataset
+from app.services.ingestion import parse_file
 from app.services.job_service import create_job, update_job
 from app.services.profiler import profile_dataset
 from app.services.detector import detect_issues
@@ -69,23 +70,27 @@ async def _run_scheduled_scan(dataset_id: str, schedule_id: str):
             if not dataset or not dataset.file_path:
                 return
 
+            df = parse_file(dataset.file_path, dataset.file_type)
+            dataset.row_count = len(df)
+            dataset.column_count = len(df.columns)
+
             job = await create_job(db, dataset_id, "scheduled_scan")
             await db.commit()
 
             await update_job(db, job.id, "running", progress=10)
             await db.commit()
 
-            profiles = await profile_dataset(dataset_id, dataset.file_path, db)
+            profiles = await profile_dataset(dataset_id, df, db)
             await db.commit()
 
             await update_job(db, job.id, "running", progress=40)
             await db.commit()
 
-            issues = await detect_issues(dataset_id, db)
+            issues = await detect_issues(dataset_id, df, db)
             await db.commit()
 
-            ts_result = await calculate_trust_score(dataset_id, db)
-            dataset.trust_score = ts_result["score"]
+            ts_result = calculate_trust_score(dataset_id, profiles, issues, dataset.row_count or 0)
+            dataset.trust_score = ts_result.overall_score
             dataset.status = "profiled"
             await db.commit()
 
@@ -100,7 +105,7 @@ async def _run_scheduled_scan(dataset_id: str, schedule_id: str):
                 drift_reports = []
                 await db.commit()
 
-            await evaluate_alert_rules(db, dataset_id, ts_result["score"], len(issues), col_profiles, drift_reports)
+            await evaluate_alert_rules(db, dataset_id, ts_result.overall_score, len(issues), col_profiles, drift_reports)
             await db.commit()
 
             await update_job(db, job.id, "completed", progress=100)

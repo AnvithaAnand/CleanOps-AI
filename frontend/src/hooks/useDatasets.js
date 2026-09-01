@@ -86,11 +86,12 @@ export function useDownloadDataset() {
   });
 }
 
-export function usePreviewData(id, rows = 100) {
+export function usePreviewData(id, rows = 100, offset = 0) {
   return useQuery({
-    queryKey: ["preview", id, rows],
-    queryFn: () => previewData(id, rows).then((r) => r.data),
+    queryKey: ["preview", id, rows, offset],
+    queryFn: () => previewData(id, rows, offset).then((r) => r.data),
     enabled: !!id,
+    keepPreviousData: true,
   });
 }
 

@@ -762,6 +762,7 @@ async def download_dataset(
 async def preview_data(
     dataset_id: str,
     rows: int = Query(100, ge=1, le=1000),
+    offset: int = Query(0, ge=0),
     db: AsyncSession = Depends(get_db),
 ):
     result = await db.execute(
@@ -772,7 +773,7 @@ async def preview_data(
         raise HTTPException(404, "Dataset not found")
 
     df = parse_file(dataset.file_path, dataset.file_type)
-    preview = df.head(rows)
+    preview = df.iloc[offset : offset + rows]
 
     preview = preview.where(preview.notna(), None)
 

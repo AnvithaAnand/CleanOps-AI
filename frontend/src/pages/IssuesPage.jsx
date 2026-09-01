@@ -4,6 +4,7 @@ import {
   AlertTriangle, CheckCircle, ArrowLeft, Loader2,
   Wrench, ChevronDown, ChevronUp, Sparkles, Code2, Zap,
 } from "lucide-react";
+import { toast } from "sonner";
 import { useIssues } from "../hooks/useIssues";
 import { useApplyRepairs, useDataset } from "../hooks/useDatasets";
 import { useAIExplainIssues } from "../hooks/useAI";
@@ -53,7 +54,7 @@ export default function IssuesPage() {
       await applyRepairs.mutateAsync([...selectedSuggestions]);
       setSelectedSuggestions(new Set());
     } catch (err) {
-      alert("Repair failed: " + (err.response?.data?.detail || err.message));
+      toast.error("Repair failed: " + (err.response?.data?.detail || err.message));
     }
   };
 
@@ -64,7 +65,7 @@ export default function IssuesPage() {
       await applyRepairs.mutateAsync(allOpenSuggestionIds);
       setSelectedSuggestions(new Set());
     } catch (err) {
-      alert("Repair failed: " + (err.response?.data?.detail || err.message));
+      toast.error("Repair failed: " + (err.response?.data?.detail || err.message));
     } finally {
       setApplyingAll(false);
     }

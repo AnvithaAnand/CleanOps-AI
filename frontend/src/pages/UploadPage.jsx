@@ -1,6 +1,7 @@
 import { useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { Upload, FileUp, X, Loader2, CheckCircle, Sparkles, Link2, Sheet, Database } from "lucide-react";
+import { toast } from "sonner";
 import { useUploadDataset } from "../hooks/useDatasets";
 import { importFromUrl, importFromGoogleSheets, importFromPostgresql } from "../api/datasets";
 import { formatBytes } from "../lib/utils";
@@ -40,8 +41,8 @@ function FileTab({ onSuccess }) {
   const validateAndSet = (f) => {
     const validExts = [".csv", ".xlsx", ".xls", ".parquet", ".pq"];
     const ext = f.name.slice(f.name.lastIndexOf(".")).toLowerCase();
-    if (!validExts.includes(ext)) { alert("Unsupported file type."); return; }
-    if (f.size > 200 * 1024 * 1024) { alert("File exceeds 200MB limit."); return; }
+    if (!validExts.includes(ext)) { toast.error("Unsupported file type. Use CSV, XLSX, or Parquet."); return; }
+    if (f.size > 200 * 1024 * 1024) { toast.error("File exceeds the 200MB limit."); return; }
     setFile(f);
   };
 
@@ -58,7 +59,7 @@ function FileTab({ onSuccess }) {
       const result = await upload.mutateAsync(formData);
       onSuccess(result.id);
     } catch (err) {
-      alert("Upload failed: " + (err.response?.data?.detail || err.message));
+      toast.error("Upload failed: " + (err.response?.data?.detail || err.message));
     }
   };
 
@@ -140,7 +141,7 @@ function UrlTab({ onSuccess }) {
       const res = await importFromUrl({ url: url.trim(), name: name.trim() || undefined });
       onSuccess(res.data.id);
     } catch (err) {
-      alert("Import failed: " + (err.response?.data?.detail || err.message));
+      toast.error("Import failed: " + (err.response?.data?.detail || err.message));
     } finally {
       setLoading(false);
     }
@@ -197,7 +198,7 @@ function SheetsTab({ onSuccess }) {
       const res = await importFromGoogleSheets({ url: url.trim(), name: name.trim() || undefined });
       onSuccess(res.data.id);
     } catch (err) {
-      alert("Import failed: " + (err.response?.data?.detail || err.message));
+      toast.error("Import failed: " + (err.response?.data?.detail || err.message));
     } finally {
       setLoading(false);
     }
@@ -265,7 +266,7 @@ function PostgresTab({ onSuccess }) {
       });
       onSuccess(res.data.id);
     } catch (err) {
-      alert("Import failed: " + (err.response?.data?.detail || err.message));
+      toast.error("Import failed: " + (err.response?.data?.detail || err.message));
     } finally {
       setLoading(false);
     }

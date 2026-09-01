@@ -1,19 +1,20 @@
 import { NavLink, useNavigate } from "react-router-dom";
-import { LayoutDashboard, Upload, ShieldCheck, Database, Activity, Bell, Users, LogOut, Clock, Sparkles } from "lucide-react";
+import { LayoutDashboard, Upload, ShieldCheck, Database, Activity, Bell, Users, LogOut, Clock, Sparkles, Settings, X } from "lucide-react";
 import { useUnreadCount } from "../../hooks/useAlerts";
 import { useAuth } from "../../contexts/AuthContext";
 
 const NAV_LINKS = [
-  { to: "/",        icon: LayoutDashboard, label: "Dashboard",      end: true },
-  { to: "/upload",  icon: Upload,          label: "Upload Dataset",  end: false },
-  { to: "/rules",   icon: ShieldCheck,     label: "Quality Rules",   end: false },
-  { to: "/alerts",  icon: Bell,            label: "Alerts",          end: false, badge: true },
-  { to: "/activity",icon: Clock,           label: "Activity",        end: false },
+  { to: "/",         icon: LayoutDashboard, label: "Dashboard",      end: true },
+  { to: "/upload",   icon: Upload,          label: "Upload Dataset",  end: false },
+  { to: "/rules",    icon: ShieldCheck,     label: "Quality Rules",   end: false },
+  { to: "/alerts",   icon: Bell,            label: "Alerts",          end: false, badge: true },
+  { to: "/activity", icon: Clock,           label: "Activity",        end: false },
+  { to: "/settings", icon: Settings,        label: "Settings",        end: false },
 ];
 
-function NavItem({ to, icon: Icon, label, end, badge, unread }) {
+function NavItem({ to, icon: Icon, label, end, badge, unread, onClick }) {
   return (
-    <NavLink to={to} end={end} className={({ isActive }) => `nav-item ${isActive ? "active" : ""}`}>
+    <NavLink to={to} end={end} onClick={onClick} className={({ isActive }) => `nav-item ${isActive ? "active" : ""}`}>
       {({ isActive }) => (
         <>
           <Icon style={{ width: 15, height: 15, flexShrink: 0 }} />
@@ -30,7 +31,7 @@ function NavItem({ to, icon: Icon, label, end, badge, unread }) {
   );
 }
 
-export default function Sidebar() {
+export default function Sidebar({ onClose }) {
   const { data: unreadAlerts = 0 } = useUnreadCount();
   const { user, logout, isAdmin } = useAuth();
   const navigate = useNavigate();
@@ -52,10 +53,16 @@ export default function Sidebar() {
             style={{ background: "linear-gradient(135deg, #818cf8, #6366f1, #7c3aed)", boxShadow: "0 4px 16px rgba(129,140,248,0.35)" }}>
             <Database style={{ width: 15, height: 15, color: "#fff" }} />
           </div>
-          <div>
+          <div className="flex-1 min-w-0">
             <p className="text-sm font-bold leading-tight" style={{ color: "var(--text-primary)" }}>CleanOps AI</p>
             <p className="text-[10px] mt-0.5 font-medium" style={{ color: "var(--text-faint)" }}>Data Reliability</p>
           </div>
+          {onClose && (
+            <button onClick={onClose} className="icon-btn lg:hidden"
+              style={{ border: "1px solid var(--border)", borderRadius: "0.625rem" }}>
+              <X style={{ width: 14, height: 14 }} />
+            </button>
+          )}
         </div>
       </div>
 
@@ -63,9 +70,9 @@ export default function Sidebar() {
       <nav className="flex-1 px-3 py-5 space-y-1 relative z-10">
         <p className="section-label px-3 mb-3">Navigation</p>
         {NAV_LINKS.map((link) => (
-          <NavItem key={link.to} {...link} unread={unreadAlerts} />
+          <NavItem key={link.to} {...link} unread={unreadAlerts} onClick={onClose} />
         ))}
-        {isAdmin && <NavItem to="/users" icon={Users} label="Users" end={false} />}
+        {isAdmin && <NavItem to="/users" icon={Users} label="Users" end={false} onClick={onClose} />}
       </nav>
 
       {/* Footer */}

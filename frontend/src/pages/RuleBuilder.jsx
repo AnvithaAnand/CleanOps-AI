@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { ShieldCheck, Plus, Trash2, Loader2 } from "lucide-react";
+import { toast } from "sonner";
 import { useRules, useCreateRule, useDeleteRule } from "../hooks/useRules";
 import { useDatasets } from "../hooks/useDatasets";
 
@@ -82,7 +83,7 @@ export default function RuleBuilder() {
       });
       setForm({ name: "", dataset_id: "", column_name: "", rule_type: "not_null", severity: "warning", parameters: {} });
     } catch (err) {
-      alert("Failed to create rule: " + (err.response?.data?.detail || err.message));
+      toast.error("Failed to create rule: " + (err.response?.data?.detail || err.message));
     }
   };
 
@@ -270,7 +271,7 @@ export default function RuleBuilder() {
                       {rule.severity}
                     </span>
                     <button
-                      onClick={() => { if (confirm("Delete this rule?")) deleteRule.mutate(rule.id); }}
+                      onClick={() => toast("Delete this rule?", { action: { label: "Delete", onClick: () => deleteRule.mutate(rule.id) } })}
                       className="btn-danger-ghost w-6 h-6"
                     >
                       <Trash2 style={{ width: 13, height: 13 }} />

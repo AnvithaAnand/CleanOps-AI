@@ -66,12 +66,27 @@ async def validate_contract(db: AsyncSession, dataset_id: str,
             "severity": "warning",
         })
 
+    # Freshness SLA
+    if contract.freshness_sla_hours is not None:
+        dataset_result = await db.execute(
+            select(Dataset).where(Dataset.id == dataset_id)
+        )
+        dataset = dataset_result.scalar_one_or_none()
+        if dataset and dataset.updated_at:
+            age_hours = (datetime.now(timezone.utc) - dataset.updated_at.replace(tzinfo=timezone.utc)).total_seconds() / 3600
+            if age_hours > contract.freshness_sla_hours:
+                violations.append({
+                    "rule": "freshness_sla",
+                    "message": f"Dataset is {age_hours:.1f}h old, exceeds SLA of {contract.freshness_sla_hours}h",
+                    "severity": "critical" if age_hours > contract.freshness_sla_hours * 2 else "warning",
+                })
+
     # Schema definition
     if contract.schema_definition:
         try:
             required_cols = json.loads(contract.schema_definition)
             current_col_names = {p.column_name for p in profiles}
-            current_col_types = {p.column_name: p.data_type for p in profiles}
+            current_col_types = {p.column_name: p.detected_type for p in profiles}
 
             for col_def in required_cols:
                 col_name = col_def.get("name")

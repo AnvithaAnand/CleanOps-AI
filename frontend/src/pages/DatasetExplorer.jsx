@@ -3,6 +3,7 @@ import { useParams, Link } from "react-router-dom";
 import {
   AlertTriangle, Download, Loader2, Shield,
   Eye, BarChart3, Bug, Code2, ArrowUpRight, Sparkles, Rows3, GitBranch, Activity, Clock, Zap, Wrench,
+  ChevronLeft, ChevronRight, History,
 } from "lucide-react";
 import { useDataset, usePreviewData, useDownloadDataset } from "../hooks/useDatasets";
 import { useProfile } from "../hooks/useProfile";
@@ -19,8 +20,10 @@ import ContractTab from "../components/contracts/ContractTab";
 import ScheduleTab from "../components/schedule/ScheduleTab";
 import PipelineTab from "../components/pipeline/PipelineTab";
 import AutoRepairTab from "../components/autorepair/AutoRepairTab";
+import VersionsTab from "../components/versions/VersionsTab";
 import TrustHistoryChart from "../components/charts/TrustHistoryChart";
 import { formatNumber } from "../lib/utils";
+import client from "../api/client";
 
 const tabs = [
   { id: "overview",  label: "Overview",      icon: Eye },
@@ -31,6 +34,7 @@ const tabs = [
   { id: "drift",     label: "Drift",         icon: Activity },
   { id: "contract",  label: "Contract",      icon: Code2 },
   { id: "schedule",  label: "Schedule",      icon: Clock },
+  { id: "versions",   label: "Versions",     icon: History },
   { id: "pipeline",   label: "Pipeline",     icon: Zap },
   { id: "autorepair", label: "Auto-Repair",  icon: Wrench },
 ];
@@ -46,11 +50,13 @@ export default function DatasetExplorer() {
   const { id } = useParams();
   const [activeTab, setActiveTab] = useState("overview");
   const [showCode, setShowCode] = useState(false);
+  const [previewPage, setPreviewPage] = useState(0);
+  const PAGE_SIZE = 100;
   const { data: dataset, isLoading } = useDataset(id);
   const { data: profile }    = useProfile(id);
   const { data: issuesData } = useIssues(id);
   const { data: trustScore } = useTrustScore(id);
-  const { data: preview }    = usePreviewData(id);
+  const { data: preview }    = usePreviewData(id, PAGE_SIZE, previewPage * PAGE_SIZE);
   const downloadMut = useDownloadDataset();
 
   if (isLoading) return <CenteredSpinner />;
@@ -118,7 +124,7 @@ export default function DatasetExplorer() {
       </div>
 
       {activeTab === "overview" && <OverviewTab dataset={dataset} trustScore={trustScore} issues={issuesData?.issues} profile={profile} datasetId={id} />}
-      {activeTab === "data"     && <DataTab preview={preview} />}
+      {activeTab === "data"     && <DataTab preview={preview} page={previewPage} onPageChange={setPreviewPage} pageSize={PAGE_SIZE} />}
       {activeTab === "columns"  && <ColumnsTab profile={profile} />}
       {activeTab === "issues"   && <IssuesTab issues={issuesData?.issues} datasetId={id} />}
       {activeTab === "lineage"  && (
@@ -130,6 +136,7 @@ export default function DatasetExplorer() {
           <LineageGraph datasetId={id} />
         </div>
       )}
+      {activeTab === "versions" && <VersionsTab datasetId={id} />}
       {activeTab === "drift"    && <DriftTab datasetId={id} />}
       {activeTab === "contract" && <ContractTab datasetId={id} />}
       {activeTab === "schedule" && <ScheduleTab datasetId={id} />}
@@ -236,15 +243,38 @@ function OverviewTab({ dataset, trustScore, issues, profile, datasetId }) {
   );
 }
 
-function DataTab({ preview }) {
+function DataTab({ preview, page, onPageChange, pageSize }) {
   if (!preview) return <CenteredSpinner />;
+  const totalPages = Math.ceil(preview.total_rows / pageSize);
+  const start = page * pageSize + 1;
+  const end = Math.min(start + preview.rows.length - 1, preview.total_rows);
+
   return (
     <div className="rounded-xl overflow-hidden" style={C.card}>
-      <div className="px-4 py-3 flex items-center justify-between" style={{ borderBottom: "1px solid var(--border)" }}>
+      <div className="px-4 py-3 flex items-center justify-between flex-wrap gap-2" style={{ borderBottom: "1px solid var(--border)" }}>
         <span className="text-sm font-medium" style={C.primary}>
-          Showing {preview.rows.length} of {formatNumber(preview.total_rows)} rows
+          Showing {formatNumber(start)}–{formatNumber(end)} of {formatNumber(preview.total_rows)} rows
         </span>
-        <span className="text-xs" style={C.muted}>{preview.columns.length} columns</span>
+        <div className="flex items-center gap-2">
+          <span className="text-xs" style={C.muted}>{preview.columns.length} columns</span>
+          {totalPages > 1 && (
+            <div className="flex items-center gap-1 ml-2">
+              <button onClick={() => onPageChange(Math.max(0, page - 1))} disabled={page === 0}
+                className="w-7 h-7 rounded-lg flex items-center justify-center disabled:opacity-30 transition-all"
+                style={{ background: "var(--bg-hover)", border: "1px solid var(--border)" }}>
+                <ChevronLeft style={{ width: 13, height: 13, color: "var(--text-secondary)" }} />
+              </button>
+              <span className="text-xs font-medium px-2" style={C.muted}>
+                {page + 1} / {totalPages}
+              </span>
+              <button onClick={() => onPageChange(Math.min(totalPages - 1, page + 1))} disabled={page >= totalPages - 1}
+                className="w-7 h-7 rounded-lg flex items-center justify-center disabled:opacity-30 transition-all"
+                style={{ background: "var(--bg-hover)", border: "1px solid var(--border)" }}>
+                <ChevronRight style={{ width: 13, height: 13, color: "var(--text-secondary)" }} />
+              </button>
+            </div>
+          )}
+        </div>
       </div>
       <div className="overflow-x-auto">
         <table className="w-full text-xs border-collapse">
@@ -259,7 +289,7 @@ function DataTab({ preview }) {
           <tbody>
             {preview.rows.map((row, idx) => (
               <tr key={idx} className="table-row-hover" style={{ borderBottom: "1px solid var(--border)" }}>
-                <td className="px-3 py-2 text-right" style={{ color: "var(--text-faint)" }}>{idx + 1}</td>
+                <td className="px-3 py-2 text-right" style={{ color: "var(--text-faint)" }}>{start + idx}</td>
                 {preview.columns.map((col) => (
                   <td key={col} className="px-3 py-2 whitespace-nowrap max-w-[180px] truncate"
                     style={{ color: row[col] == null ? "#ef4444" : "var(--text-primary)", fontStyle: row[col] == null ? "italic" : "normal" }}>
@@ -374,13 +404,8 @@ function ExportReportButton({ datasetId, datasetName }) {
   const download = async (format) => {
     setLoading(format);
     try {
-      const res = await fetch(
-        `/api/datasets/${datasetId}/report?format=${format}`,
-        { headers: { Authorization: `Bearer ${localStorage.getItem("cleanops_token")}` } }
-      );
-      if (!res.ok) throw new Error("Export failed");
-      const blob = await res.blob();
-      const url = URL.createObjectURL(blob);
+      const res = await client.get(`/api/datasets/${datasetId}/report?format=${format}`, { responseType: "blob" });
+      const url = URL.createObjectURL(res.data);
       const a = document.createElement("a");
       a.href = url;
       a.download = `${datasetName.replace(/\s+/g, "_")}_report.${format === "pdf" ? "pdf" : "xlsx"}`;
