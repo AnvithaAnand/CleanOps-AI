@@ -1,4 +1,4 @@
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient, keepPreviousData } from "@tanstack/react-query";
 import {
   listDatasets,
   getDataset,
@@ -91,7 +91,7 @@ export function usePreviewData(id, rows = 100, offset = 0) {
     queryKey: ["preview", id, rows, offset],
     queryFn: () => previewData(id, rows, offset).then((r) => r.data),
     enabled: !!id,
-    keepPreviousData: true,
+    placeholderData: keepPreviousData,
   });
 }
 
