@@ -71,7 +71,7 @@ export function AuthProvider({ children }) {
   }, []);
 
   return (
-    <AuthContext.Provider value={{ user, token, loading, login, signup, logout, isAdmin: user?.role === "admin" }}>
+    <AuthContext.Provider value={{ user, setUser: (u) => { setUser(u); localStorage.setItem(USER_KEY, JSON.stringify(u)); }, token, loading, login, signup, logout, isAdmin: user?.role === "admin" }}>
       {children}
     </AuthContext.Provider>
   );
