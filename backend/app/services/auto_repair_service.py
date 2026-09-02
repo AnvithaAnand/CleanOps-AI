@@ -12,8 +12,8 @@ from app.services.job_service import create_job, update_job
 logger = logging.getLogger(__name__)
 
 SAFE_STRATEGIES = {
-    "fill_mean", "fill_median", "fill_mode",
-    "remove_duplicates", "fill_empty_string",
+    "mean_imputation", "median_imputation", "mode_imputation",
+    "deduplicate", "drop_rows", "clip_outlier", "coerce_type",
 }
 
 

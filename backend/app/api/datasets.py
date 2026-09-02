@@ -1,4 +1,3 @@
-import io
 import json
 import uuid
 from typing import Optional
@@ -21,12 +20,11 @@ from app.schemas.dataset import (
     DatasetResponse,
     DatasetVersionResponse,
     RepairRequest,
-    RepairResultResponse,
 )
 from app.schemas.profile import ColumnProfileResponse, ProfileResponse
 from app.schemas.trust_score import TrustScoreResponse
 from app.schemas.validation import IssueResponse, IssuesListResponse, RepairSuggestionResponse, ValidateRequest, ValidationRunResponse
-from app.services.alert_service import create_alert, evaluate_alert_rules
+from app.services.alert_service import evaluate_alert_rules
 from app.services.contract_service import validate_contract
 from app.services.audit_service import log_action
 from app.services.connector_service import import_from_google_sheets, import_from_postgresql, import_from_url

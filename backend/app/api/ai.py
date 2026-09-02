@@ -7,7 +7,6 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.database import get_db
-from app.models.audit import AuditLog
 from app.models.dataset import Dataset
 from app.models.profile import ColumnProfile
 from app.models.repair import RepairAction, RepairSuggestion

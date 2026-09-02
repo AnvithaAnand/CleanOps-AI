@@ -1,7 +1,6 @@
 import json
 from datetime import datetime
 
-import numpy as np
 import pandas as pd
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession

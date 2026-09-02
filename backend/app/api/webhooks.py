@@ -1,5 +1,4 @@
 import json
-import secrets
 
 import httpx
 from fastapi import APIRouter, Depends, HTTPException

@@ -5,6 +5,7 @@ import {
   Eye, BarChart3, Bug, Code2, ArrowUpRight, Sparkles, Rows3, GitBranch, Activity, Clock, Zap, Wrench,
   ChevronLeft, ChevronRight, History,
 } from "lucide-react";
+import { toast } from "sonner";
 import { useDataset, usePreviewData, useDownloadDataset } from "../hooks/useDatasets";
 import { useProfile } from "../hooks/useProfile";
 import { useIssues } from "../hooks/useIssues";
@@ -411,6 +412,8 @@ function ExportReportButton({ datasetId, datasetName }) {
       a.download = `${datasetName.replace(/\s+/g, "_")}_report.${format === "pdf" ? "pdf" : "xlsx"}`;
       a.click();
       URL.revokeObjectURL(url);
+    } catch (err) {
+      toast.error("Export failed: " + (err.response?.data?.detail || err.message));
     } finally {
       setLoading(null);
       setOpen(false);
