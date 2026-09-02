@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Bell, Trash2, ToggleLeft, ToggleRight, Plus, Zap, AlertTriangle, Info, Loader2, X, Mail, Send, CheckCircle2, Webhook, Eye, EyeOff, CheckCircle, XCircle } from "lucide-react";
 import { useAlerts, useAlertRules, useDeleteAlert, useMarkRead, useToggleRule, useDeleteRule, useCreateRule } from "../hooks/useAlerts";
 import { useNotificationSettings, useUpdateNotificationSettings, useSendTestNotification } from "../hooks/useNotifications";
-import { useWebhooks, useWebhookEvents, useCreateWebhook, useToggleWebhook, useTestWebhook, useDeleteWebhook } from "../hooks/useWebhooks";
+import { useWebhooks, useCreateWebhook, useToggleWebhook, useTestWebhook, useDeleteWebhook } from "../hooks/useWebhooks";
 import { formatDate } from "../lib/utils";
 
 const severityConfig = {

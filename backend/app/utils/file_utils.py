@@ -14,7 +14,8 @@ def ensure_upload_dir(dataset_id: str) -> str:
 
 async def save_upload_file(upload_file: UploadFile, dataset_id: str) -> tuple[str, int]:
     upload_dir = ensure_upload_dir(dataset_id)
-    file_path = os.path.join(upload_dir, upload_file.filename)
+    safe_name = Path(upload_file.filename).name
+    file_path = os.path.join(upload_dir, safe_name)
 
     size = 0
     with open(file_path, "wb") as f:

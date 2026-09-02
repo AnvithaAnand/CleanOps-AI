@@ -431,6 +431,8 @@ function ExportReportButton({ datasetId, datasetName }) {
         Export Report
       </button>
       {open && (
+        <>
+        <div className="fixed inset-0 z-40" onClick={() => setOpen(false)} />
         <div
           className="absolute right-0 top-9 rounded-xl shadow-xl z-50 overflow-hidden min-w-[140px]"
           style={{ background: "var(--bg-card)", border: "1px solid var(--border)" }}
@@ -441,6 +443,7 @@ function ExportReportButton({ datasetId, datasetName }) {
             </button>
           ))}
         </div>
+        </>
       )}
     </div>
   );

@@ -119,6 +119,12 @@ async def _run_scheduled_scan(dataset_id: str, schedule_id: str):
 
             logger.info(f"Scheduled scan completed for dataset {dataset_id}")
         except Exception as e:
+            await db.rollback()
+            try:
+                await update_job(db, job.id, "failed", error=str(e))
+                await db.commit()
+            except Exception:
+                pass
             logger.error(f"Scheduled scan failed for dataset {dataset_id}: {e}")
 
 

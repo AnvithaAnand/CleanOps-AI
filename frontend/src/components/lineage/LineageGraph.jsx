@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useEffect, useMemo } from "react";
 import {
   ReactFlow,
   Background,
@@ -105,8 +105,11 @@ export default function LineageGraph({ datasetId }) {
     return layoutGraph(data.nodes, data.edges);
   }, [data]);
 
-  const [nodes, , onNodesChange] = useNodesState(layoutedNodes);
-  const [edges, , onEdgesChange] = useEdgesState(layoutedEdges);
+  const [nodes, setNodes, onNodesChange] = useNodesState(layoutedNodes);
+  const [edges, setEdges, onEdgesChange] = useEdgesState(layoutedEdges);
+
+  useEffect(() => { setNodes(layoutedNodes); }, [layoutedNodes, setNodes]);
+  useEffect(() => { setEdges(layoutedEdges); }, [layoutedEdges, setEdges]);
 
   if (isLoading) {
     return (

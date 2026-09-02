@@ -51,7 +51,8 @@ export default function IssuesPage() {
   const handleApplySelected = async () => {
     if (selectedSuggestions.size === 0) return;
     try {
-      await applyRepairs.mutateAsync([...selectedSuggestions]);
+      const result = await applyRepairs.mutateAsync([...selectedSuggestions]);
+      toast.success(`${result?.repairs_applied ?? selectedSuggestions.size} repairs applied successfully`);
       setSelectedSuggestions(new Set());
     } catch (err) {
       toast.error("Repair failed: " + (err.response?.data?.detail || err.message));
@@ -62,7 +63,8 @@ export default function IssuesPage() {
     if (allOpenSuggestionIds.length === 0) return;
     setApplyingAll(true);
     try {
-      await applyRepairs.mutateAsync(allOpenSuggestionIds);
+      const result = await applyRepairs.mutateAsync(allOpenSuggestionIds);
+      toast.success(`${result?.repairs_applied ?? allOpenSuggestionIds.length} repairs applied — trust score recalculating`);
       setSelectedSuggestions(new Set());
     } catch (err) {
       toast.error("Repair failed: " + (err.response?.data?.detail || err.message));

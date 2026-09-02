@@ -1,4 +1,5 @@
 import json
+import os
 import uuid
 from typing import Optional
 
@@ -89,12 +90,22 @@ async def _run_repairs_background(dataset_id: str, suggestion_ids: list[str], jo
             await db.commit()
 
             # Lineage: repair node linked to most recent issues node
+            from app.models.lineage import LineageNode
+            prev_result = await db.execute(
+                select(LineageNode)
+                .where(LineageNode.dataset_id == dataset_id, LineageNode.node_type == "issues")
+                .order_by(LineageNode.created_at.desc())
+                .limit(1)
+            )
+            prev_node = prev_result.scalar_one_or_none()
             repair_node = await add_lineage_node(
                 db, dataset_id, "repair",
                 f"{repair_result.get('repairs_applied', len(suggestion_ids))} repairs applied",
                 entity_id=job_id,
                 metadata={"repairs_applied": repair_result.get("repairs_applied", 0), "trust_score": score.overall_score},
             )
+            if prev_node:
+                await add_lineage_edge(db, prev_node.id, repair_node.id, "repaired_by")
             await db.commit()
 
             await log_action(db, dataset_id, "repair_complete",
@@ -207,13 +218,20 @@ async def _process_dataset(dataset_id: str, job_id: str | None = None):
             })
 
         except Exception as e:
-            dataset.status = "error"
-            await db.commit()
+            await db.rollback()
+            try:
+                result = await db.execute(select(Dataset).where(Dataset.id == dataset_id))
+                ds = result.scalar_one_or_none()
+                if ds:
+                    ds.status = "error"
+                    await db.commit()
+            except Exception:
+                pass
             if job_id:
                 async with async_session() as err_db:
                     await update_job(err_db, job_id, "failed", error=str(e))
                     await err_db.commit()
-            raise
+            print(f"Background processing failed for {dataset_id}: {e}")
 
 
 @router.post("/upload", response_model=DatasetResponse, status_code=201)
@@ -223,12 +241,20 @@ async def upload_dataset(
     name: Optional[str] = Form(None),
     db: AsyncSession = Depends(get_db),
 ):
-    file_type = detect_file_type(file.filename)
+    if not file.filename:
+        raise HTTPException(status_code=400, detail="Filename is required")
+    try:
+        file_type = detect_file_type(file.filename)
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
     dataset_name = name or file.filename.rsplit(".", 1)[0]
 
     dataset_id = str(uuid.uuid4())
 
-    file_path, file_size = await save_upload_file(file, dataset_id)
+    try:
+        file_path, file_size = await save_upload_file(file, dataset_id)
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
 
     dataset = Dataset(
         id=dataset_id,
@@ -749,10 +775,15 @@ async def download_dataset(
     else:
         file_path = dataset.file_path
 
+    if not os.path.exists(file_path):
+        raise HTTPException(404, "Dataset file not found on disk")
+
+    ext = os.path.splitext(file_path)[1].lower()
+    media_types = {".csv": "text/csv", ".xlsx": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", ".parquet": "application/octet-stream"}
     return FileResponse(
         file_path,
-        filename=f"{dataset.name}_cleaned.csv",
-        media_type="text/csv",
+        filename=f"{dataset.name}{ext or '.csv'}",
+        media_type=media_types.get(ext, "application/octet-stream"),
     )
 
 

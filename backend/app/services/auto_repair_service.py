@@ -46,6 +46,7 @@ async def run_auto_repair(db: AsyncSession, dataset_id: str):
         .join(DetectedIssue, RepairSuggestion.issue_id == DetectedIssue.id)
         .where(
             DetectedIssue.dataset_id == dataset_id,
+            DetectedIssue.status == "open",
             RepairSuggestion.is_recommended == True,
             RepairSuggestion.confidence >= config.min_confidence,
         )

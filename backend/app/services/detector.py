@@ -2,6 +2,7 @@ import json
 
 import numpy as np
 import pandas as pd
+from sqlalchemy import update
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models.repair import RepairSuggestion
@@ -12,6 +13,13 @@ from app.utils.stats_utils import compute_iqr_bounds
 async def detect_issues(
     dataset_id: str, df: pd.DataFrame, db: AsyncSession
 ) -> list[DetectedIssue]:
+    await db.execute(
+        update(DetectedIssue)
+        .where(DetectedIssue.dataset_id == dataset_id, DetectedIssue.status == "open")
+        .values(status="superseded")
+    )
+    await db.flush()
+
     run = ValidationRun(
         dataset_id=dataset_id,
         status="running",
@@ -96,7 +104,7 @@ async def _detect_duplicates(
             confidence=0.95,
             is_recommended=True,
             preview_before=json.dumps({"duplicate_count": dup_count}),
-            preview_after=json.dumps({"rows_after": len(df) - dup_count + len(df[~dup_mask.duplicated(keep="first")])}),
+            preview_after=json.dumps({"rows_after": len(df.drop_duplicates())}),
         )
         db.add(suggestion)
         issues.append(issue)
