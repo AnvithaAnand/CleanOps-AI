@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends
+from fastapi import Depends
 
 from app.auth import get_current_user
 from app.api.ai import router as ai_router
@@ -18,18 +18,28 @@ from app.api.rules import router as rules_router
 
 _auth = [Depends(get_current_user)]
 
-api_router = APIRouter()
-api_router.include_router(health_router)
-api_router.include_router(auth_router)
-api_router.include_router(datasets_router, dependencies=_auth)
-api_router.include_router(rules_router, dependencies=_auth)
-api_router.include_router(ai_router, dependencies=_auth)
-api_router.include_router(jobs_router, dependencies=_auth)
-api_router.include_router(alerts_router, dependencies=_auth)
-api_router.include_router(contracts_router, dependencies=_auth)
-api_router.include_router(schedules_router, dependencies=_auth)
-api_router.include_router(pipeline_router, dependencies=_auth)
-api_router.include_router(activity_router, dependencies=_auth)
-api_router.include_router(auto_repair_router, dependencies=_auth)
-api_router.include_router(notifications_router, dependencies=_auth)
-api_router.include_router(webhooks_router, dependencies=_auth)
+# Public routers (no auth)
+public_routers = [health_router, auth_router]
+
+# Protected routers (require auth)
+protected_routers = [
+    datasets_router,
+    rules_router,
+    ai_router,
+    jobs_router,
+    alerts_router,
+    contracts_router,
+    schedules_router,
+    pipeline_router,
+    activity_router,
+    auto_repair_router,
+    notifications_router,
+    webhooks_router,
+]
+
+
+def register_routers(app):
+    for r in public_routers:
+        app.include_router(r)
+    for r in protected_routers:
+        app.include_router(r, dependencies=_auth)
