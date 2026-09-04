@@ -1,0 +1,41 @@
+order_id,customer_name,product,quantity,unit_price,total_amount,region,order_date,email
+1001,Alice Johnson,Laptop,2,999.99,1999.98,North,2026-01-15,alice@example.com
+1002,Bob Smith,Mouse,5,29.99,149.95,South,2026-01-16,bob@example.com
+1003,Charlie Davis,Keyboard,3,79.99,239.97,East,2026-01-17,charlie@example.com
+1004,Diana Prince,Monitor,1,449.99,449.99,West,2026-01-18,diana@example.com
+1005,Eve Martinez,,2,999.99,1999.98,North,2026-01-19,eve@example.com
+1006,Frank Lee,Laptop,1,999.99,999.99,,2026-01-20,frank@example.com
+1007,Grace Kim,Tablet,4,349.99,1399.96,South,2026-01-21,grace@example.com
+1008,,Mouse,10,29.99,299.90,East,2026-01-22,
+1009,Henry Brown,Keyboard,,79.99,239.97,West,2026-01-23,henry@example.com
+1010,Ivy Chen,Laptop,2,999.99,1999.98,North,2026-01-24,ivy@example.com
+1011,Jack Wilson,Monitor,1,449.99,449.99,South,2026-01-25,jack@example.com
+1012,Karen White,Mouse,5,29.99,149.95,East,2026-01-26,karen@example.com
+1013,Leo Garcia,Tablet,3,349.99,1049.97,West,2026-01-27,leo@example.com
+1014,Mia Lopez,Laptop,1,999.99,999.99,North,2026-01-28,mia@example.com
+1015,Noah Hall,Keyboard,2,79.99,159.98,,2026-01-29,noah@example.com
+1016,Olivia Adams,Mouse,8,29.99,239.92,South,2026-01-30,olivia@example.com
+1017,Peter Clark,Monitor,1,449.99,449.99,East,2026-01-31,peter@example.com
+1018,Quinn Evans,Tablet,,349.99,,West,2026-02-01,quinn@example.com
+1019,Rachel Moore,Laptop,2,999.99,1999.98,North,2026-02-02,rachel@example.com
+1020,Sam Taylor,Keyboard,3,79.99,239.97,South,2026-02-03,sam@example.com
+1021,Alice Johnson,Laptop,2,999.99,1999.98,North,2026-01-15,alice@example.com
+1022,Bob Smith,Mouse,5,29.99,149.95,South,2026-01-16,bob@example.com
+1023,Tina Reed,Monitor,1,449.99,449.99,,2026-02-04,tina@example.com
+1024,Uma Patel,,1,79.99,79.99,East,2026-02-05,uma@example.com
+1025,Victor Stone,Laptop,50,999.99,49999.50,West,2026-02-06,victor@example.com
+1026,Wendy Fox,Mouse,3,29.99,89.97,North,2026-02-07,wendy@example.com
+1027,Xander Cole,Tablet,2,349.99,699.98,South,2026-02-08,xander@example.com
+1028,Yara Singh,Keyboard,1,79.99,79.99,East,2026-02-09,yara@example.com
+1029,Zane Brooks,Monitor,200,449.99,89998.00,West,2026-02-10,zane@example.com
+1030,,Laptop,1,999.99,999.99,North,2026-02-11,
+1031,Amy Turner,Mouse,4,29.99,119.96,South,2026-02-12,amy@example.com
+1032,Ben Harris,Keyboard,2,79.99,159.98,East,2026-02-13,ben@example.com
+1033,Cora James,Tablet,1,349.99,349.99,West,2026-02-14,cora@example.com
+1034,Dan Miller,Laptop,3,999.99,2999.97,North,2026-02-15,dan@example.com
+1035,Ella Scott,Monitor,1,449.99,449.99,South,2026-02-16,ella@example.com
+1036,Finn Grant,Mouse,six,29.99,179.94,East,2026-02-17,finn@example.com
+1037,Gina Perez,Keyboard,2,79.99,159.98,West,2026-02-18,gina@example.com
+1038,Hugo Walsh,Tablet,3,349.99,1049.97,North,2026-02-19,hugo@example.com
+1039,Iris Long,Laptop,1,999.99,999.99,South,2026-02-20,iris@example.com
+1040,Jake Hunt,Monitor,1,449.99,449.99,East,2026-02-21,jake@example.com

@@ -1,0 +1,31 @@
+emp_id,full_name,department,salary,years_experience,performance_score,hire_date,status,location
+E001,Sarah Connor,Engineering,95000,8,4.2,2018-03-15,Active,New York
+E002,John Reese,Marketing,72000,5,3.8,2021-06-01,Active,Chicago
+E003,Root Admin,Engineering,105000,12,4.7,2014-09-22,Active,San Francisco
+E004,Sameen Shaw,Security,88000,7,4.5,2019-01-10,Active,New York
+E005,Harold Finch,Engineering,150000,20,4.9,2006-11-30,Active,New York
+E006,Joss Carter,Operations,,6,3.9,2020-04-18,Active,Chicago
+E007,Lionel Fusco,Operations,65000,4,three,2022-08-05,Active,Chicago
+E008,Zoe Morgan,Marketing,78000,,4.1,2020-11-12,Active,San Francisco
+E009,Carl Elias,Finance,92000,15,4.3,2011-02-28,Active,New York
+E010,Control Agent,Security,95000,10,,2016-07-19,Active,Washington DC
+E011,Sarah Connor,Engineering,95000,8,4.2,2018-03-15,Active,New York
+E012,John Reese,Marketing,72000,5,3.8,2021-06-01,Active,Chicago
+E013,Caleb Phipps,Engineering,85000,3,3.5,2023-05-14,Active,San Francisco
+E014,Grace Hendricks,Finance,70000,2,3.2,2024-01-20,Active,New York
+E015,Nathan Ingram,Engineering,310000,18,4.8,2008-04-01,Active,New York
+E016,Jessica Arndt,Marketing,,4,3.6,2022-03-09,Active,Chicago
+E017,Logan Pierce,Finance,88000,9,4.0,2017-10-25,Active,San Francisco
+E018,Harper Rose,Operations,62000,3,,2023-07-11,Active,Chicago
+E019,Claire Mahoney,Security,79000,5,3.7,2021-09-30,Active,Washington DC
+E020,,Engineering,91000,7,4.1,2019-06-15,Active,San Francisco
+E021,Daniel Casey,Marketing,68000,3,3.4,2023-02-14,Active,New York
+E022,Monica Jacobs,Finance,75000,,3.9,2020-12-01,Active,Chicago
+E023,Anthony Marconi,Operations,59000,2,high,2024-03-18,Active,San Francisco
+E024,Alicia Corwin,Security,92000,11,4.4,2015-08-22,,Washington DC
+E025,Peter Collier,Operations,67000,4,3.6,2022-05-30,Active,New York
+E026,Martine Rousseau,Security,87000,8,4.2,2018-09-14,Active,Washington DC
+E027,Devon Grice,Engineering,98000,9,4.3,2017-04-07,Active,San Francisco
+E028,Iris Campbell,Marketing,71000,4,3.7,2022-01-19,Active,Chicago
+E029,Shaw Lambert,Finance,500000,6,4.0,2020-07-23,Active,New York
+E030,Terry Easton,Operations,64000,3,3.5,2023-06-12,Active,Chicago

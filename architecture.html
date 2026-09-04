@@ -1,0 +1,1581 @@
+<title>CleanOps AI Architecture</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap">
+
+<style>
+  :root {
+    --bg: #FAFBFD;
+    --bg-section: #FFFFFF;
+    --bg-card: #F4F6F9;
+    --bg-code: #EEF0F4;
+    --text: #1B1F27;
+    --text-secondary: #4A5568;
+    --text-muted: #717D91;
+    --accent: #4338CA;
+    --accent-light: #EDE9FE;
+    --accent-mid: #7C6AED;
+    --green: #059669;
+    --green-light: #ECFDF5;
+    --amber: #D97706;
+    --amber-light: #FFFBEB;
+    --red: #DC2626;
+    --red-light: #FEF2F2;
+    --sky: #0284C7;
+    --sky-light: #F0F9FF;
+    --border: #E2E5EB;
+    --border-accent: #C4B5FD;
+    --shadow: 0 1px 3px rgba(0,0,0,0.06);
+    --shadow-lg: 0 4px 16px rgba(0,0,0,0.08);
+    --svg-stroke: #1B1F27;
+    --svg-fill-light: #F4F6F9;
+    --svg-accent: #4338CA;
+    --svg-green: #059669;
+    --svg-amber: #D97706;
+    --svg-red: #DC2626;
+    --svg-sky: #0284C7;
+    --diagram-bg: #FAFBFD;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #0E1017;
+      --bg-section: #161820;
+      --bg-card: #1E2028;
+      --bg-code: #252730;
+      --text: #E4E7ED;
+      --text-secondary: #A0A8B8;
+      --text-muted: #6B7588;
+      --accent: #818CF8;
+      --accent-light: #1E1B4B;
+      --accent-mid: #A5B4FC;
+      --green: #34D399;
+      --green-light: #064E3B;
+      --amber: #FBBF24;
+      --amber-light: #451A03;
+      --red: #F87171;
+      --red-light: #450A0A;
+      --sky: #38BDF8;
+      --sky-light: #0C4A6E;
+      --border: #2A2D38;
+      --border-accent: #4338CA;
+      --shadow: 0 1px 3px rgba(0,0,0,0.3);
+      --shadow-lg: 0 4px 16px rgba(0,0,0,0.4);
+      --svg-stroke: #E4E7ED;
+      --svg-fill-light: #1E2028;
+      --svg-accent: #818CF8;
+      --svg-green: #34D399;
+      --svg-amber: #FBBF24;
+      --svg-red: #F87171;
+      --svg-sky: #38BDF8;
+      --diagram-bg: #161820;
+    }
+  }
+
+  :root[data-theme="dark"] {
+    --bg: #0E1017;
+    --bg-section: #161820;
+    --bg-card: #1E2028;
+    --bg-code: #252730;
+    --text: #E4E7ED;
+    --text-secondary: #A0A8B8;
+    --text-muted: #6B7588;
+    --accent: #818CF8;
+    --accent-light: #1E1B4B;
+    --accent-mid: #A5B4FC;
+    --green: #34D399;
+    --green-light: #064E3B;
+    --amber: #FBBF24;
+    --amber-light: #451A03;
+    --red: #F87171;
+    --red-light: #450A0A;
+    --sky: #38BDF8;
+    --sky-light: #0C4A6E;
+    --border: #2A2D38;
+    --border-accent: #4338CA;
+    --shadow: 0 1px 3px rgba(0,0,0,0.3);
+    --shadow-lg: 0 4px 16px rgba(0,0,0,0.4);
+    --svg-stroke: #E4E7ED;
+    --svg-fill-light: #1E2028;
+    --svg-accent: #818CF8;
+    --svg-green: #34D399;
+    --svg-amber: #FBBF24;
+    --svg-red: #F87171;
+    --svg-sky: #38BDF8;
+    --diagram-bg: #161820;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  h1, h2, h3, h4 {
+    font-family: 'Space Grotesk', system-ui, sans-serif;
+    text-wrap: balance;
+    line-height: 1.2;
+  }
+
+  code, .mono {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.88em;
+  }
+
+  .wrap {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 0 24px;
+  }
+
+  /* ── Hero ── */
+  .hero {
+    padding: 72px 0 56px;
+    text-align: center;
+    border-bottom: 1px solid var(--border);
+  }
+  .hero-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 5px 14px;
+    border-radius: 100px;
+    background: var(--accent-light);
+    color: var(--accent);
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    margin-bottom: 20px;
+  }
+  .hero h1 {
+    font-size: clamp(36px, 5vw, 56px);
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    margin-bottom: 12px;
+  }
+  .hero h1 span { color: var(--accent); }
+  .hero p {
+    font-size: 18px;
+    color: var(--text-secondary);
+    max-width: 640px;
+    margin: 0 auto 36px;
+  }
+  .stats-row {
+    display: flex;
+    justify-content: center;
+    gap: 40px;
+    flex-wrap: wrap;
+  }
+  .stat { text-align: center; }
+  .stat-num {
+    font-family: 'Space Grotesk', monospace;
+    font-size: 32px;
+    font-weight: 700;
+    color: var(--accent);
+    display: block;
+  }
+  .stat-label {
+    font-size: 13px;
+    color: var(--text-muted);
+    letter-spacing: 0.02em;
+  }
+
+  /* ── Sections ── */
+  section {
+    padding: 56px 0;
+    border-bottom: 1px solid var(--border);
+  }
+  section:last-child { border-bottom: none; }
+
+  .section-label {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 8px;
+  }
+  .section-title {
+    font-size: clamp(24px, 3vw, 32px);
+    font-weight: 700;
+    margin-bottom: 8px;
+  }
+  .section-desc {
+    font-size: 15px;
+    color: var(--text-secondary);
+    max-width: 680px;
+    margin-bottom: 32px;
+  }
+
+  /* ── Diagrams ── */
+  figure {
+    margin: 24px 0;
+    background: var(--diagram-bg);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    overflow: hidden;
+  }
+  figure svg {
+    display: block;
+    width: 100%;
+    height: auto;
+  }
+  figcaption {
+    padding: 12px 20px;
+    font-size: 13px;
+    color: var(--text-muted);
+    border-top: 1px solid var(--border);
+    background: var(--bg-card);
+  }
+
+  /* ── Cards Grid ── */
+  .card-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 16px;
+  }
+  .card {
+    background: var(--bg-section);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 20px;
+    box-shadow: var(--shadow);
+  }
+  .card-icon {
+    width: 36px;
+    height: 36px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    margin-bottom: 12px;
+    font-weight: 600;
+  }
+  .card h4 {
+    font-size: 15px;
+    font-weight: 600;
+    margin-bottom: 6px;
+  }
+  .card p {
+    font-size: 13px;
+    color: var(--text-secondary);
+    line-height: 1.5;
+  }
+  .card .tag {
+    display: inline-block;
+    margin-top: 8px;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+  }
+
+  .icon-accent { background: var(--accent-light); color: var(--accent); }
+  .icon-green { background: var(--green-light); color: var(--green); }
+  .icon-amber { background: var(--amber-light); color: var(--amber); }
+  .icon-red { background: var(--red-light); color: var(--red); }
+  .icon-sky { background: var(--sky-light); color: var(--sky); }
+
+  .tag-accent { background: var(--accent-light); color: var(--accent); }
+  .tag-green { background: var(--green-light); color: var(--green); }
+
+  /* ── Tech Stack ── */
+  .stack-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+  }
+  @media (max-width: 640px) {
+    .stack-grid { grid-template-columns: 1fr; }
+  }
+  .stack-col h3 {
+    font-size: 14px;
+    font-weight: 600;
+    margin-bottom: 12px;
+    padding-bottom: 8px;
+    border-bottom: 2px solid var(--accent);
+    display: inline-block;
+  }
+  .stack-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    padding: 7px 0;
+    border-bottom: 1px solid var(--border);
+    font-size: 13px;
+  }
+  .stack-item:last-child { border-bottom: none; }
+  .stack-item .name { font-weight: 500; }
+  .stack-item .ver {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    color: var(--text-muted);
+    background: var(--bg-code);
+    padding: 1px 6px;
+    border-radius: 4px;
+  }
+
+  /* ── Tables ── */
+  .table-wrap {
+    overflow-x: auto;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    background: var(--bg-section);
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+    font-variant-numeric: tabular-nums;
+  }
+  th {
+    text-align: left;
+    font-weight: 600;
+    font-size: 11px;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    padding: 10px 16px;
+    background: var(--bg-card);
+    border-bottom: 1px solid var(--border);
+    white-space: nowrap;
+  }
+  td {
+    padding: 9px 16px;
+    border-bottom: 1px solid var(--border);
+    vertical-align: top;
+  }
+  tr:last-child td { border-bottom: none; }
+  td code {
+    background: var(--bg-code);
+    padding: 1px 5px;
+    border-radius: 3px;
+    font-size: 12px;
+    white-space: nowrap;
+  }
+
+  /* ── Pipeline Steps ── */
+  .pipeline-steps {
+    display: flex;
+    gap: 0;
+    flex-wrap: wrap;
+    margin: 24px 0;
+  }
+  .p-step {
+    flex: 1;
+    min-width: 140px;
+    padding: 16px 14px;
+    background: var(--bg-section);
+    border: 1px solid var(--border);
+    position: relative;
+    text-align: center;
+  }
+  .p-step:first-child { border-radius: 10px 0 0 10px; }
+  .p-step:last-child { border-radius: 0 10px 10px 0; }
+  .p-step .p-num {
+    font-family: 'Space Grotesk', monospace;
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--accent);
+    display: block;
+    margin-bottom: 4px;
+  }
+  .p-step .p-name {
+    font-size: 13px;
+    font-weight: 600;
+    margin-bottom: 2px;
+  }
+  .p-step .p-detail {
+    font-size: 11px;
+    color: var(--text-muted);
+  }
+
+  /* ── Dimension bars ── */
+  .dim-list { display: flex; flex-direction: column; gap: 10px; margin: 20px 0; }
+  .dim-row { display: flex; align-items: center; gap: 12px; }
+  .dim-label { width: 110px; font-size: 13px; font-weight: 500; flex-shrink: 0; }
+  .dim-bar-bg {
+    flex: 1;
+    height: 24px;
+    background: var(--bg-card);
+    border-radius: 6px;
+    overflow: hidden;
+    border: 1px solid var(--border);
+  }
+  .dim-bar {
+    height: 100%;
+    border-radius: 5px;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    padding-right: 8px;
+    font-size: 11px;
+    font-weight: 600;
+    color: white;
+  }
+  .dim-weight {
+    font-size: 12px;
+    color: var(--text-muted);
+    width: 40px;
+    text-align: right;
+    flex-shrink: 0;
+  }
+
+  /* ── Endpoint groups ── */
+  .ep-group { margin-bottom: 20px; }
+  .ep-group h4 {
+    font-size: 14px;
+    font-weight: 600;
+    margin-bottom: 8px;
+    padding-left: 4px;
+  }
+  .ep {
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+    padding: 5px 0;
+    font-size: 13px;
+  }
+  .ep-method {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    font-weight: 600;
+    padding: 2px 6px;
+    border-radius: 3px;
+    text-transform: uppercase;
+    flex-shrink: 0;
+    width: 48px;
+    text-align: center;
+  }
+  .ep-get { background: var(--sky-light); color: var(--sky); }
+  .ep-post { background: var(--green-light); color: var(--green); }
+  .ep-put { background: var(--amber-light); color: var(--amber); }
+  .ep-patch { background: var(--accent-light); color: var(--accent); }
+  .ep-del { background: var(--red-light); color: var(--red); }
+  .ep-path { font-family: 'JetBrains Mono', monospace; font-size: 12px; }
+  .ep-desc { color: var(--text-muted); font-size: 12px; }
+
+  .two-col {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+  }
+  @media (max-width: 768px) {
+    .two-col { grid-template-columns: 1fr; }
+    .stats-row { gap: 24px; }
+  }
+
+  /* ── Footer ── */
+  .footer {
+    padding: 32px 0;
+    text-align: center;
+    font-size: 13px;
+    color: var(--text-muted);
+  }
+  .footer a { color: var(--accent); text-decoration: none; }
+
+  .highlight-box {
+    background: var(--accent-light);
+    border: 1px solid var(--border-accent);
+    border-radius: 10px;
+    padding: 20px 24px;
+    margin: 20px 0;
+  }
+  .highlight-box h4 { color: var(--accent); margin-bottom: 6px; }
+  .highlight-box p { font-size: 14px; color: var(--text-secondary); }
+
+  /* ── Expandable Details ── */
+  details {
+    background: var(--bg-section);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    margin: 12px 0;
+    overflow: hidden;
+  }
+  details[open] { border-color: var(--border-accent); }
+  summary {
+    padding: 14px 20px;
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    user-select: none;
+    list-style: none;
+    color: var(--text);
+    transition: background 0.15s;
+  }
+  summary::-webkit-details-marker { display: none; }
+  summary::before {
+    content: '';
+    width: 18px;
+    height: 18px;
+    border-radius: 4px;
+    background: var(--accent-light);
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 10 10'%3E%3Cpath d='M3 1l4 4-4 4' stroke='%234338CA' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: center;
+    transition: transform 0.2s;
+  }
+  details[open] > summary::before { transform: rotate(90deg); }
+  summary:hover { background: var(--bg-card); }
+  summary .detail-tag {
+    margin-left: auto;
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    padding: 2px 8px;
+    border-radius: 4px;
+    background: var(--accent-light);
+    color: var(--accent);
+  }
+  .detail-body {
+    padding: 0 20px 20px;
+    font-size: 13px;
+    line-height: 1.7;
+    color: var(--text-secondary);
+    border-top: 1px solid var(--border);
+  }
+  .detail-body p { margin: 10px 0; }
+  .detail-body strong { color: var(--text); }
+  .detail-body ul { margin: 8px 0 8px 20px; }
+  .detail-body li { margin: 4px 0; }
+  .detail-body code {
+    background: var(--bg-code);
+    padding: 1px 5px;
+    border-radius: 3px;
+    font-size: 12px;
+  }
+  .detail-body .formula {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+    background: var(--bg-code);
+    padding: 12px 16px;
+    border-radius: 8px;
+    margin: 10px 0;
+    border: 1px solid var(--border);
+    overflow-x: auto;
+    white-space: pre;
+    line-height: 1.8;
+  }
+</style>
+
+<!-- ═══════════════ HERO ═══════════════ -->
+<div class="hero">
+  <div class="wrap">
+    <div class="hero-badge">
+      <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><circle cx="6" cy="6" r="5" stroke="currentColor" stroke-width="1.5"/><path d="M4 6l1.5 1.5L8 5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      System Architecture
+    </div>
+    <h1>CleanOps <span>AI</span></h1>
+    <p>Autonomous Data Reliability Platform — intelligent profiling, issue detection, auto-repair, trust scoring, and continuous monitoring for production data pipelines.</p>
+    <div class="stats-row">
+      <div class="stat"><span class="stat-num">55+</span><span class="stat-label">API Endpoints</span></div>
+      <div class="stat"><span class="stat-num">20</span><span class="stat-label">Backend Services</span></div>
+      <div class="stat"><span class="stat-num">22</span><span class="stat-label">Database Tables</span></div>
+      <div class="stat"><span class="stat-num">13</span><span class="stat-label">Frontend Pages</span></div>
+      <div class="stat"><span class="stat-num">5</span><span class="stat-label">Trust Dimensions</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════ SYSTEM ARCHITECTURE ═══════════════ -->
+<section>
+  <div class="wrap">
+    <div class="section-label">Overview</div>
+    <div class="section-title">System Architecture</div>
+    <div class="section-desc">Three-tier architecture: React SPA on Vercel communicates with a FastAPI async backend on Render, persisting to SQLite (dev) or PostgreSQL (prod).</div>
+
+    <figure>
+      <svg viewBox="0 0 1000 420" role="img" aria-label="System architecture: React frontend on Vercel connects via REST to FastAPI backend on Render, which uses SQLAlchemy to access the database, and integrates with Gemini AI, Resend email, and outbound webhooks.">
+        <!-- Frontend -->
+        <rect x="40" y="60" width="240" height="300" rx="12" fill="var(--svg-fill-light)" stroke="var(--svg-accent)" stroke-width="2"/>
+        <text x="160" y="46" text-anchor="middle" font-family="Space Grotesk, sans-serif" font-size="13" font-weight="600" fill="var(--svg-accent)">FRONTEND (Vercel)</text>
+        <text x="160" y="96" text-anchor="middle" font-family="Space Grotesk, sans-serif" font-size="14" font-weight="600" fill="var(--svg-stroke)">React 19 SPA</text>
+        <text x="160" y="118" text-anchor="middle" font-family="Inter, sans-serif" font-size="11" fill="var(--text-muted)">Vite 8 + Tailwind CSS 4</text>
+
+        <rect x="64" y="140" width="192" height="28" rx="5" fill="var(--bg-code)" stroke="var(--border)" stroke-width="1"/>
+        <text x="160" y="159" text-anchor="middle" font-family="Inter, sans-serif" font-size="11" fill="var(--svg-stroke)">React Router v7</text>
+
+        <rect x="64" y="176" width="192" height="28" rx="5" fill="var(--bg-code)" stroke="var(--border)" stroke-width="1"/>
+        <text x="160" y="195" text-anchor="middle" font-family="Inter, sans-serif" font-size="11" fill="var(--svg-stroke)">TanStack React Query v5</text>
+
+        <rect x="64" y="212" width="192" height="28" rx="5" fill="var(--bg-code)" stroke="var(--border)" stroke-width="1"/>
+        <text x="160" y="231" text-anchor="middle" font-family="Inter, sans-serif" font-size="11" fill="var(--svg-stroke)">Recharts + React Flow</text>
+
+        <rect x="64" y="248" width="192" height="28" rx="5" fill="var(--bg-code)" stroke="var(--border)" stroke-width="1"/>
+        <text x="160" y="267" text-anchor="middle" font-family="Inter, sans-serif" font-size="11" fill="var(--svg-stroke)">Axios + JWT Auth</text>
+
+        <rect x="64" y="284" width="192" height="28" rx="5" fill="var(--bg-code)" stroke="var(--border)" stroke-width="1"/>
+        <text x="160" y="303" text-anchor="middle" font-family="Inter, sans-serif" font-size="11" fill="var(--svg-stroke)">Sonner Toasts</text>
+
+        <rect x="64" y="320" width="192" height="28" rx="5" fill="var(--bg-code)" stroke="var(--border)" stroke-width="1"/>
+        <text x="160" y="339" text-anchor="middle" font-family="Inter, sans-serif" font-size="11" fill="var(--svg-stroke)">Lucide Icons</text>
+
+        <!-- Arrow: Frontend → Backend -->
+        <defs>
+          <marker id="arr" viewBox="0 0 10 7" refX="10" refY="3.5" markerWidth="10" markerHeight="7" orient="auto-start-reverse">
+            <polygon points="0 0, 10 3.5, 0 7" fill="var(--svg-accent)"/>
+          </marker>
+        </defs>
+        <line x1="280" y1="210" x2="358" y2="210" stroke="var(--svg-accent)" stroke-width="2" marker-end="url(#arr)"/>
+        <text x="319" y="200" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="10" fill="var(--svg-accent)">REST/JSON</text>
+
+        <!-- Backend -->
+        <rect x="360" y="60" width="280" height="300" rx="12" fill="var(--svg-fill-light)" stroke="var(--svg-green)" stroke-width="2"/>
+        <text x="500" y="46" text-anchor="middle" font-family="Space Grotesk, sans-serif" font-size="13" font-weight="600" fill="var(--svg-green)">BACKEND (Render)</text>
+        <text x="500" y="96" text-anchor="middle" font-family="Space Grotesk, sans-serif" font-size="14" font-weight="600" fill="var(--svg-stroke)">FastAPI 0.115</text>
+        <text x="500" y="118" text-anchor="middle" font-family="Inter, sans-serif" font-size="11" fill="var(--text-muted)">Uvicorn ASGI + async/await</text>
+
+        <rect x="384" y="136" width="232" height="24" rx="5" fill="var(--bg-code)" stroke="var(--border)" stroke-width="1"/>
+        <text x="500" y="153" text-anchor="middle" font-family="Inter, sans-serif" font-size="11" fill="var(--svg-stroke)">JWT Auth (python-jose + bcrypt)</text>
+
+        <rect x="384" y="168" width="232" height="24" rx="5" fill="var(--bg-code)" stroke="var(--border)" stroke-width="1"/>
+        <text x="500" y="185" text-anchor="middle" font-family="Inter, sans-serif" font-size="11" fill="var(--svg-stroke)">Pydantic v2 Validation</text>
+
+        <rect x="384" y="200" width="232" height="24" rx="5" fill="var(--bg-code)" stroke="var(--border)" stroke-width="1"/>
+        <text x="500" y="217" text-anchor="middle" font-family="Inter, sans-serif" font-size="11" fill="var(--svg-stroke)">Pandas + NumPy Engine</text>
+
+        <rect x="384" y="232" width="112" height="24" rx="5" fill="var(--bg-code)" stroke="var(--border)" stroke-width="1"/>
+        <text x="440" y="249" text-anchor="middle" font-family="Inter, sans-serif" font-size="11" fill="var(--svg-stroke)">Profiler</text>
+
+        <rect x="504" y="232" width="112" height="24" rx="5" fill="var(--bg-code)" stroke="var(--border)" stroke-width="1"/>
+        <text x="560" y="249" text-anchor="middle" font-family="Inter, sans-serif" font-size="11" fill="var(--svg-stroke)">Detector</text>
+
+        <rect x="384" y="264" width="112" height="24" rx="5" fill="var(--bg-code)" stroke="var(--border)" stroke-width="1"/>
+        <text x="440" y="281" text-anchor="middle" font-family="Inter, sans-serif" font-size="11" fill="var(--svg-stroke)">Repairer</text>
+
+        <rect x="504" y="264" width="112" height="24" rx="5" fill="var(--bg-code)" stroke="var(--border)" stroke-width="1"/>
+        <text x="560" y="281" text-anchor="middle" font-family="Inter, sans-serif" font-size="11" fill="var(--svg-stroke)">Trust Score</text>
+
+        <rect x="384" y="296" width="112" height="24" rx="5" fill="var(--bg-code)" stroke="var(--border)" stroke-width="1"/>
+        <text x="440" y="313" text-anchor="middle" font-family="Inter, sans-serif" font-size="11" fill="var(--svg-stroke)">Drift Monitor</text>
+
+        <rect x="504" y="296" width="112" height="24" rx="5" fill="var(--bg-code)" stroke="var(--border)" stroke-width="1"/>
+        <text x="560" y="313" text-anchor="middle" font-family="Inter, sans-serif" font-size="11" fill="var(--svg-stroke)">Scheduler</text>
+
+        <rect x="384" y="328" width="232" height="24" rx="5" fill="var(--bg-code)" stroke="var(--border)" stroke-width="1"/>
+        <text x="500" y="345" text-anchor="middle" font-family="Inter, sans-serif" font-size="11" fill="var(--svg-stroke)">SQLAlchemy 2.0 Async ORM</text>
+
+        <!-- Arrow: Backend → Database -->
+        <line x1="640" y1="210" x2="718" y2="210" stroke="var(--svg-green)" stroke-width="2" marker-end="url(#arr)"/>
+        <text x="679" y="200" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="10" fill="var(--svg-green)">async</text>
+
+        <!-- Database -->
+        <rect x="720" y="140" width="200" height="140" rx="12" fill="var(--svg-fill-light)" stroke="var(--svg-amber)" stroke-width="2"/>
+        <text x="820" y="130" text-anchor="middle" font-family="Space Grotesk, sans-serif" font-size="13" font-weight="600" fill="var(--svg-amber)">DATABASE</text>
+        <text x="820" y="176" text-anchor="middle" font-family="Space Grotesk, sans-serif" font-size="14" font-weight="600" fill="var(--svg-stroke)">SQLite / PostgreSQL</text>
+        <text x="820" y="198" text-anchor="middle" font-family="Inter, sans-serif" font-size="11" fill="var(--text-muted)">aiosqlite (dev)</text>
+        <text x="820" y="214" text-anchor="middle" font-family="Inter, sans-serif" font-size="11" fill="var(--text-muted)">asyncpg (prod)</text>
+        <text x="820" y="240" text-anchor="middle" font-family="Space Grotesk, sans-serif" font-size="22" font-weight="700" fill="var(--svg-amber)">22 tables</text>
+        <text x="820" y="260" text-anchor="middle" font-family="Inter, sans-serif" font-size="11" fill="var(--text-muted)">Full audit trail</text>
+
+        <!-- External Services -->
+        <rect x="720" y="300" width="200" height="60" rx="12" fill="var(--svg-fill-light)" stroke="var(--svg-sky)" stroke-width="2"/>
+        <text x="820" y="290" text-anchor="middle" font-family="Space Grotesk, sans-serif" font-size="13" font-weight="600" fill="var(--svg-sky)">INTEGRATIONS</text>
+        <text x="820" y="325" text-anchor="middle" font-family="Inter, sans-serif" font-size="11" fill="var(--svg-stroke)">Gemini 1.5 Flash (AI)</text>
+        <text x="820" y="345" text-anchor="middle" font-family="Inter, sans-serif" font-size="11" fill="var(--svg-stroke)">Resend (Email) &bull; Webhooks</text>
+
+        <line x1="640" y1="300" x2="718" y2="330" stroke="var(--svg-sky)" stroke-width="1.5" stroke-dasharray="4,3" marker-end="url(#arr)"/>
+      </svg>
+      <figcaption>Three-tier deployment: Vercel CDN serves the React SPA; Render hosts the async FastAPI backend; data persists in SQLite (dev) or PostgreSQL (production). External integrations: Google Gemini for AI features, Resend for email alerts, outbound webhooks for pipeline automation.</figcaption>
+    </figure>
+  </div>
+</section>
+
+<!-- ═══════════════ DATA PIPELINE ═══════════════ -->
+<section>
+  <div class="wrap">
+    <div class="section-label">Core Engine</div>
+    <div class="section-title">Data Pipeline Flow</div>
+    <div class="section-desc">When a dataset is uploaded, a fully autonomous pipeline runs in the background: parse, profile every column, detect issues, compute trust score, check drift, evaluate alerts, and validate contracts.</div>
+
+    <figure>
+      <svg viewBox="0 0 1000 340" role="img" aria-label="Data pipeline: Upload flows to Ingest, then Profile, Detect Issues, Compute Trust Score, with branches to Drift Detection and Alert Evaluation, and an optional Auto-Repair loop.">
+        <!-- Step 1: Upload -->
+        <rect x="20" y="100" width="120" height="70" rx="8" fill="var(--svg-fill-light)" stroke="var(--svg-accent)" stroke-width="2"/>
+        <text x="80" y="128" text-anchor="middle" font-family="Space Grotesk, sans-serif" font-size="12" font-weight="600" fill="var(--svg-accent)">1. UPLOAD</text>
+        <text x="80" y="148" text-anchor="middle" font-family="Inter, sans-serif" font-size="10" fill="var(--text-muted)">CSV / XLSX /</text>
+        <text x="80" y="160" text-anchor="middle" font-family="Inter, sans-serif" font-size="10" fill="var(--text-muted)">Parquet / URL</text>
+        <line x1="140" y1="135" x2="168" y2="135" stroke="var(--svg-stroke)" stroke-width="1.5" marker-end="url(#arr)"/>
+
+        <!-- Step 2: Ingest -->
+        <rect x="170" y="100" width="110" height="70" rx="8" fill="var(--svg-fill-light)" stroke="var(--svg-stroke)" stroke-width="1.5"/>
+        <text x="225" y="128" text-anchor="middle" font-family="Space Grotesk, sans-serif" font-size="12" font-weight="600" fill="var(--svg-stroke)">2. INGEST</text>
+        <text x="225" y="148" text-anchor="middle" font-family="Inter, sans-serif" font-size="10" fill="var(--text-muted)">Parse to</text>
+        <text x="225" y="160" text-anchor="middle" font-family="Inter, sans-serif" font-size="10" fill="var(--text-muted)">DataFrame</text>
+        <line x1="280" y1="135" x2="308" y2="135" stroke="var(--svg-stroke)" stroke-width="1.5" marker-end="url(#arr)"/>
+
+        <!-- Step 3: Profile -->
+        <rect x="310" y="100" width="110" height="70" rx="8" fill="var(--svg-fill-light)" stroke="var(--svg-green)" stroke-width="2"/>
+        <text x="365" y="128" text-anchor="middle" font-family="Space Grotesk, sans-serif" font-size="12" font-weight="600" fill="var(--svg-green)">3. PROFILE</text>
+        <text x="365" y="148" text-anchor="middle" font-family="Inter, sans-serif" font-size="10" fill="var(--text-muted)">Types, stats,</text>
+        <text x="365" y="160" text-anchor="middle" font-family="Inter, sans-serif" font-size="10" fill="var(--text-muted)">PII, patterns</text>
+        <line x1="420" y1="135" x2="448" y2="135" stroke="var(--svg-stroke)" stroke-width="1.5" marker-end="url(#arr)"/>
+
+        <!-- Step 4: Detect -->
+        <rect x="450" y="100" width="110" height="70" rx="8" fill="var(--svg-fill-light)" stroke="var(--svg-red)" stroke-width="2"/>
+        <text x="505" y="128" text-anchor="middle" font-family="Space Grotesk, sans-serif" font-size="12" font-weight="600" fill="var(--svg-red)">4. DETECT</text>
+        <text x="505" y="148" text-anchor="middle" font-family="Inter, sans-serif" font-size="10" fill="var(--text-muted)">Missing, dupes,</text>
+        <text x="505" y="160" text-anchor="middle" font-family="Inter, sans-serif" font-size="10" fill="var(--text-muted)">outliers, types</text>
+        <line x1="560" y1="135" x2="588" y2="135" stroke="var(--svg-stroke)" stroke-width="1.5" marker-end="url(#arr)"/>
+
+        <!-- Step 5: Trust Score -->
+        <rect x="590" y="92" width="130" height="86" rx="8" fill="var(--svg-fill-light)" stroke="var(--svg-accent)" stroke-width="2"/>
+        <text x="655" y="118" text-anchor="middle" font-family="Space Grotesk, sans-serif" font-size="12" font-weight="600" fill="var(--svg-accent)">5. TRUST SCORE</text>
+        <text x="655" y="138" text-anchor="middle" font-family="Inter, sans-serif" font-size="10" fill="var(--text-muted)">5 dimensions</text>
+        <text x="655" y="152" text-anchor="middle" font-family="Inter, sans-serif" font-size="10" fill="var(--text-muted)">weighted 0–100</text>
+        <text x="655" y="170" text-anchor="middle" font-family="Space Grotesk, sans-serif" font-size="11" font-weight="600" fill="var(--svg-accent)">Snapshot saved</text>
+
+        <!-- Arrow to Drift -->
+        <line x1="655" y1="178" x2="655" y2="228" stroke="var(--svg-amber)" stroke-width="1.5" marker-end="url(#arr)"/>
+
+        <!-- Drift -->
+        <rect x="590" y="230" width="130" height="56" rx="8" fill="var(--svg-fill-light)" stroke="var(--svg-amber)" stroke-width="1.5"/>
+        <text x="655" y="254" text-anchor="middle" font-family="Space Grotesk, sans-serif" font-size="11" font-weight="600" fill="var(--svg-amber)">DRIFT CHECK</text>
+        <text x="655" y="272" text-anchor="middle" font-family="Inter, sans-serif" font-size="10" fill="var(--text-muted)">Schema / Distribution</text>
+
+        <!-- Arrow to Alerts -->
+        <line x1="720" y1="135" x2="758" y2="135" stroke="var(--svg-stroke)" stroke-width="1.5" marker-end="url(#arr)"/>
+
+        <!-- Alerts -->
+        <rect x="760" y="100" width="110" height="70" rx="8" fill="var(--svg-fill-light)" stroke="var(--svg-red)" stroke-width="1.5"/>
+        <text x="815" y="128" text-anchor="middle" font-family="Space Grotesk, sans-serif" font-size="12" font-weight="600" fill="var(--svg-red)">6. ALERTS</text>
+        <text x="815" y="148" text-anchor="middle" font-family="Inter, sans-serif" font-size="10" fill="var(--text-muted)">Rules, email,</text>
+        <text x="815" y="160" text-anchor="middle" font-family="Inter, sans-serif" font-size="10" fill="var(--text-muted)">webhooks</text>
+
+        <!-- Arrow to Contract -->
+        <line x1="815" y1="170" x2="815" y2="228" stroke="var(--svg-stroke)" stroke-width="1.5" marker-end="url(#arr)"/>
+
+        <!-- Contract -->
+        <rect x="760" y="230" width="110" height="56" rx="8" fill="var(--svg-fill-light)" stroke="var(--svg-sky)" stroke-width="1.5"/>
+        <text x="815" y="254" text-anchor="middle" font-family="Space Grotesk, sans-serif" font-size="11" font-weight="600" fill="var(--svg-sky)">CONTRACT</text>
+        <text x="815" y="272" text-anchor="middle" font-family="Inter, sans-serif" font-size="10" fill="var(--text-muted)">SLA validation</text>
+
+        <!-- Lineage -->
+        <rect x="900" y="100" width="90" height="70" rx="8" fill="var(--svg-fill-light)" stroke="var(--svg-stroke)" stroke-width="1.5"/>
+        <text x="945" y="128" text-anchor="middle" font-family="Space Grotesk, sans-serif" font-size="11" font-weight="600" fill="var(--svg-stroke)">LINEAGE</text>
+        <text x="945" y="148" text-anchor="middle" font-family="Inter, sans-serif" font-size="10" fill="var(--text-muted)">DAG nodes</text>
+        <text x="945" y="160" text-anchor="middle" font-family="Inter, sans-serif" font-size="10" fill="var(--text-muted)">+ edges</text>
+        <line x1="870" y1="135" x2="898" y2="135" stroke="var(--svg-stroke)" stroke-width="1.5" marker-end="url(#arr)"/>
+
+        <!-- Auto-Repair Loop -->
+        <rect x="450" y="230" width="110" height="56" rx="8" fill="var(--svg-fill-light)" stroke="var(--svg-green)" stroke-width="2"/>
+        <text x="505" y="254" text-anchor="middle" font-family="Space Grotesk, sans-serif" font-size="11" font-weight="600" fill="var(--svg-green)">AUTO-REPAIR</text>
+        <text x="505" y="272" text-anchor="middle" font-family="Inter, sans-serif" font-size="10" fill="var(--text-muted)">8 strategies</text>
+        <line x1="505" y1="170" x2="505" y2="228" stroke="var(--svg-green)" stroke-width="1.5" marker-end="url(#arr)"/>
+
+        <!-- Loop-back arrow from auto-repair to profile -->
+        <path d="M 450 258 C 370 258, 365 200, 365 175" stroke="var(--svg-green)" stroke-width="1.5" fill="none" stroke-dasharray="5,3" marker-end="url(#arr)"/>
+        <text x="390" y="224" text-anchor="middle" font-family="Inter, sans-serif" font-size="9" fill="var(--svg-green)">re-profile</text>
+
+        <!-- Background label -->
+        <text x="500" y="32" text-anchor="middle" font-family="Space Grotesk, sans-serif" font-size="14" font-weight="600" fill="var(--text-muted)">Background Task (asyncio.create_task)</text>
+        <rect x="20" y="45" width="970" height="1" fill="var(--border)"/>
+      </svg>
+      <figcaption>Autonomous pipeline: each step runs as an async background task. Auto-repair creates a feedback loop — after repairs are applied, the dataset is re-profiled and the trust score recalculated. Every node is tracked in the lineage graph.</figcaption>
+    </figure>
+
+    <details>
+      <summary>What happens step-by-step when you upload a file? <span class="detail-tag">Deep Dive</span></summary>
+      <div class="detail-body">
+        <p><strong>Synchronous (before the API responds, &lt;1 second):</strong></p>
+        <ul>
+          <li>File extension validated (.csv, .xlsx, .xls, .parquet, .pq)</li>
+          <li>Filename sanitized — path components stripped to prevent directory traversal attacks</li>
+          <li>File streamed to disk in <strong>1 MB chunks</strong>. If it exceeds 200 MB mid-stream, the partial file is deleted and a 400 error is returned</li>
+          <li>A <code>Dataset</code> record is created (status: <code>"uploaded"</code>)</li>
+          <li>A <code>Job</code> record is created (type: <code>"profile"</code>, progress: 0%)</li>
+          <li>An audit log entry records the upload</li>
+          <li><code>asyncio.create_task()</code> launches the background pipeline — the API response returns immediately</li>
+        </ul>
+        <p><strong>Async background pipeline (runs after user gets the response):</strong></p>
+        <ul>
+          <li><strong>0–10%:</strong> Parse file into a Pandas DataFrame (CSV → <code>pd.read_csv()</code>, XLSX → <code>pd.read_excel()</code>, Parquet → <code>pd.read_parquet()</code>). Row/column counts saved.</li>
+          <li><strong>10–50%:</strong> Profile every column — type detection (samples 100 rows), null/unique/duplicate stats, numeric statistics (min/max/mean/median/std_dev), distribution histograms, top values, pattern detection, PII detection.</li>
+          <li><strong>50–80%:</strong> Detection engine runs 4 passes — missing values, duplicate rows, outliers (IQR), type mismatches. Each issue gets severity + repair suggestions with confidence scores.</li>
+          <li><strong>80–85%:</strong> Drift check — saves baseline on first run; on subsequent runs compares against baseline for schema/distribution/volume drift.</li>
+          <li><strong>85–90%:</strong> Trust score calculated across 5 weighted dimensions. Snapshot saved for history.</li>
+          <li><strong>90–95%:</strong> Alert rules evaluated (trust_score_below, issue_count_above, etc.). Emails + webhooks fired if triggered.</li>
+          <li><strong>95–98%:</strong> Data contract validated if one exists (min trust score, max null %, schema check).</li>
+          <li><strong>98–100%:</strong> Lineage nodes created (upload → profile → issues), dataset status set to <code>"profiled"</code>, job marked completed.</li>
+        </ul>
+        <p>The user sees the dataset card update from "processing" to "profiled" in real-time as TanStack React Query polls for updates.</p>
+      </div>
+    </details>
+
+    <details>
+      <summary>What happens when you click "Apply All" repairs? <span class="detail-tag">Deep Dive</span></summary>
+      <div class="detail-body">
+        <ul>
+          <li>Frontend sends <code>POST /api/datasets/:id/repair</code> with a list of suggestion IDs</li>
+          <li>Backend loads the current dataset file into a Pandas DataFrame</li>
+          <li>For each suggestion, applies the strategy directly to the DataFrame:
+            <ul>
+              <li><code>mean_imputation</code> → <code>df[col].fillna(df[col].mean())</code></li>
+              <li><code>median_imputation</code> → <code>df[col].fillna(df[col].median())</code></li>
+              <li><code>mode_imputation</code> → <code>df[col].fillna(df[col].mode()[0])</code></li>
+              <li><code>deduplicate</code> → <code>df.drop_duplicates()</code></li>
+              <li><code>clip_outlier</code> → <code>df[col].clip(lower, upper)</code></li>
+              <li><code>coerce_type</code> → <code>pd.to_numeric(df[col], errors='coerce')</code></li>
+            </ul>
+          </li>
+          <li>Repaired DataFrame saved as a <strong>new versioned file</strong> (e.g., <code>v2.csv</code>). The original file is never modified.</li>
+          <li><code>DatasetVersion</code> record created with new row count and change summary</li>
+          <li>Issues marked as <code>"resolved"</code>; <code>RepairAction</code> records logged</li>
+          <li>Full pipeline re-runs on the repaired data: re-profile → re-detect → recalculate trust score</li>
+          <li>Lineage graph updated: a "repair" node is added and linked to the issues node</li>
+          <li>Audit log records everything that happened</li>
+        </ul>
+        <p><strong>Key design:</strong> Every repair is non-destructive. The original data is preserved, and you can download any previous version.</p>
+      </div>
+    </details>
+
+    <div class="highlight-box">
+      <h4>Trust Score Formula</h4>
+      <p>Weighted composite of 5 quality dimensions, each scored 0–100, producing an overall score that quantifies dataset reliability at a glance.</p>
+    </div>
+
+    <div class="dim-list">
+      <div class="dim-row">
+        <span class="dim-label">Completeness</span>
+        <div class="dim-bar-bg"><div class="dim-bar" style="width:100%; background: var(--accent);">avg non-null %</div></div>
+        <span class="dim-weight">25%</span>
+      </div>
+      <div class="dim-row">
+        <span class="dim-label">Validity</span>
+        <div class="dim-bar-bg"><div class="dim-bar" style="width:80%; background: var(--green);">type-match %</div></div>
+        <span class="dim-weight">20%</span>
+      </div>
+      <div class="dim-row">
+        <span class="dim-label">Consistency</span>
+        <div class="dim-bar-bg"><div class="dim-bar" style="width:80%; background: var(--sky);">low outlier/dup rate</div></div>
+        <span class="dim-weight">20%</span>
+      </div>
+      <div class="dim-row">
+        <span class="dim-label">Uniqueness</span>
+        <div class="dim-bar-bg"><div class="dim-bar" style="width:80%; background: var(--amber);">non-duplicate %</div></div>
+        <span class="dim-weight">20%</span>
+      </div>
+      <div class="dim-row">
+        <span class="dim-label">Integrity</span>
+        <div class="dim-bar-bg"><div class="dim-bar" style="width:60%; background: var(--red);">rule-pass rate</div></div>
+        <span class="dim-weight">15%</span>
+      </div>
+    </div>
+
+    <details>
+      <summary>Why doesn't the trust score reach 100 after repairs? <span class="detail-tag">Real Math Example</span></summary>
+      <div class="detail-body">
+        <p><strong>Example: Titanic dataset (891 rows, 12 columns) after all repairs applied:</strong></p>
+
+        <p><strong>Completeness (25%):</strong> Formula: <code>100 - avg_null_pct_across_all_columns</code></p>
+        <p>Even after repairing Age and Embarked nulls, the Cabin column still has ~77% nulls (687 out of 891). That's too many to impute meaningfully, so it stays. Average null % across 12 columns ≈ 6.4%. <strong>Score ≈ 93.6</strong></p>
+
+        <p><strong>Validity (20%):</strong> Only counts <code>open</code> type_mismatch issues. After coerce_type repairs, all type issues are resolved. <strong>Score = 100</strong> ✓</p>
+
+        <p><strong>Consistency (20%):</strong> Only counts <code>open</code> outlier + duplicate issues. After deduplicate + clip repairs, these are resolved. <strong>Score = 100</strong> ✓</p>
+
+        <p><strong>Uniqueness (20%):</strong> This is the key dimension. It measures duplicate <em>values within each column</em> across column profiles — not detected issues. A "Sex" column with 2 values across 891 rows has ~889 "duplicates". Same for "Embarked" (3 values), "Pclass" (3 values), "Survived" (2 values). This is natural for categorical data, but the formula still penalizes it. <strong>Score ≈ 85–92</strong></p>
+
+        <p><strong>Integrity (15%):</strong> No custom quality rules defined → no violations. <strong>Score = 100</strong> ✓</p>
+
+        <div class="formula">Overall = (93.6 × 0.25) + (100 × 0.20) + (100 × 0.20) + (88 × 0.20) + (100 × 0.15)
+       = 23.4 + 20.0 + 20.0 + 17.6 + 15.0
+       = <strong>96.0</strong></div>
+
+        <p><strong>Bottom line:</strong> A score of 95–97 after repairs is excellent. A perfect 100 would require zero nulls in every column AND zero repeated values — which doesn't exist in real-world data. The score is honest by design.</p>
+      </div>
+    </details>
+  </div>
+</section>
+
+<!-- ═══════════════ INGESTION METHODS ═══════════════ -->
+<section>
+  <div class="wrap">
+    <div class="section-label">Data Ingestion</div>
+    <div class="section-title">4 Import Methods</div>
+    <div class="section-desc">Multiple ways to get data into the platform — all end up at the same autonomous pipeline.</div>
+
+    <div class="card-grid">
+      <div class="card">
+        <div class="card-icon icon-accent">1</div>
+        <h4>File Upload</h4>
+        <p>Drag-and-drop or browse for CSV, XLSX, XLS, or Parquet. Streamed in 1MB chunks. <strong>200 MB limit.</strong></p>
+      </div>
+      <div class="card">
+        <div class="card-icon icon-sky">2</div>
+        <h4>URL Import</h4>
+        <p>Paste any public URL to a CSV/Excel/Parquet file. Downloaded server-side via httpx. <strong>60s timeout.</strong></p>
+      </div>
+      <div class="card">
+        <div class="card-icon icon-green">3</div>
+        <h4>Google Sheets</h4>
+        <p>Paste a share link. Sheet must be "Anyone with link can view". Auto-converts to CSV export URL.</p>
+      </div>
+      <div class="card">
+        <div class="card-icon icon-amber">4</div>
+        <h4>PostgreSQL Query</h4>
+        <p>Enter connection details + SQL query. Uses asyncpg driver. Results imported as DataFrame.</p>
+      </div>
+    </div>
+
+    <details>
+      <summary>How does each import method work under the hood? <span class="detail-tag">Deep Dive</span></summary>
+      <div class="detail-body">
+        <p><strong>File Upload:</strong></p>
+        <ul>
+          <li>Frontend validates extension + size before sending</li>
+          <li>Sent as <code>multipart/form-data</code> to <code>POST /api/datasets/upload</code></li>
+          <li>Backend sanitizes filename (strips path to prevent <code>../../etc/passwd</code> attacks)</li>
+          <li>Streamed to <code>uploads/{dataset_id}/{filename}</code> in 1 MB chunks</li>
+          <li>If file exceeds 200 MB mid-stream, partial file is deleted and 400 returned</li>
+        </ul>
+        <p><strong>URL Import:</strong></p>
+        <ul>
+          <li><code>httpx.AsyncClient</code> with <code>follow_redirects=True</code> and 60s timeout</li>
+          <li>File type detected by URL extension: <code>.parquet/.pq</code> → Parquet, <code>.xlsx/.xls</code> → Excel, else → CSV</li>
+          <li>Also checks <code>Content-Type</code> header for Excel (<code>spreadsheetml</code>)</li>
+          <li>Entire response loaded into memory, parsed by appropriate Pandas reader</li>
+          <li>Saved as <code>data.csv</code> in the uploads directory, then pipeline runs</li>
+        </ul>
+        <p><strong>Google Sheets:</strong></p>
+        <ul>
+          <li>Extracts spreadsheet ID from URL via regex: <code>/spreadsheets/d/([a-zA-Z0-9_-]+)/</code></li>
+          <li>Extracts <code>gid</code> parameter if present (defaults to <code>0</code> = first tab)</li>
+          <li>Constructs export URL: <code>https://docs.google.com/spreadsheets/d/{ID}/export?format=csv&amp;gid={GID}</code></li>
+          <li>Downloads using the same URL import function</li>
+        </ul>
+        <p><strong>PostgreSQL:</strong></p>
+        <ul>
+          <li>Connects via <code>asyncpg.connect("postgresql://user:pass@host:port/db")</code></li>
+          <li>Runs <code>conn.fetch(query)</code> — returns rows as Record objects</li>
+          <li>Each row converted to dict, assembled into a DataFrame</li>
+          <li>Default query template includes <code>LIMIT 10000</code> as safety</li>
+        </ul>
+        <p><strong>All 4 methods converge:</strong> The DataFrame is saved as CSV → Dataset record created → Background pipeline runs (profile → detect → score → drift → alerts). Same pipeline regardless of data source.</p>
+      </div>
+    </details>
+  </div>
+</section>
+
+<!-- ═══════════════ FEATURES ═══════════════ -->
+<section>
+  <div class="wrap">
+    <div class="section-label">Capabilities</div>
+    <div class="section-title">Feature Overview</div>
+    <div class="section-desc">Every feature a data reliability platform needs — from ingestion to monitoring — built end-to-end.</div>
+
+    <div class="card-grid">
+      <div class="card">
+        <div class="card-icon icon-accent">P</div>
+        <h4>Column-Level Profiling</h4>
+        <p>Auto-detects column types (boolean, integer, float, datetime, categorical, string). Computes null/unique/duplicate percentages, min/max/mean/median/std_dev, distribution histograms, top values, regex patterns, and PII detection.</p>
+      </div>
+
+      <div class="card">
+        <div class="card-icon icon-red">D</div>
+        <h4>Issue Detection Engine</h4>
+        <p>Four detection passes: missing values (per-column null rates), duplicate rows (exact match), outliers (IQR method on numeric columns), and type mismatches (mixed-type columns). Each issue gets severity, affected rows, and repair suggestions.</p>
+      </div>
+
+      <div class="card">
+        <div class="card-icon icon-green">R</div>
+        <h4>Auto-Repair System</h4>
+        <p>8 repair strategies: mean/median/mode imputation, drop rows, deduplicate, clip outliers, remove outlier rows, coerce types. Runs autonomously above a configurable confidence threshold, or manually per-issue.</p>
+        <span class="tag tag-green">Creates versioned snapshots</span>
+      </div>
+
+      <div class="card">
+        <div class="card-icon icon-accent">T</div>
+        <h4>Trust Score Engine</h4>
+        <p>Composite 0–100 reliability score across 5 weighted dimensions: Completeness (25%), Validity (20%), Consistency (20%), Uniqueness (20%), Integrity (15%). Historical trend tracking with snapshots.</p>
+      </div>
+
+      <div class="card">
+        <div class="card-icon icon-sky">AI</div>
+        <h4>AI Intelligence (Gemini)</h4>
+        <p>Powered by Google Gemini 1.5 Flash. Executive dataset summaries, per-issue explanations, natural language commands ("fill missing ages with median"), and exportable pandas cleaning code. Graceful fallbacks when API is unavailable.</p>
+      </div>
+
+      <div class="card">
+        <div class="card-icon icon-amber">M</div>
+        <h4>Drift Monitoring</h4>
+        <p>Baseline snapshots + continuous comparison. Detects schema drift (added/removed/type-changed columns), distribution drift (null rate &gt;10pp, mean &gt;20% change), and volume drift (row count &gt;20% change).</p>
+      </div>
+
+      <div class="card">
+        <div class="card-icon icon-red">A</div>
+        <h4>Alert Engine</h4>
+        <p>Configurable rules: trust_score_below, issue_count_above, null_rate_above, drift_detected. Fires alerts with email notifications (Resend) and outbound webhooks (HMAC-SHA256 signed). 4 default rules seeded on startup.</p>
+      </div>
+
+      <div class="card">
+        <div class="card-icon icon-sky">C</div>
+        <h4>Data Contracts</h4>
+        <p>Define SLAs per dataset: minimum trust score, maximum null percentage, minimum row count, freshness SLA (hours), and expected schema (required columns + types). Validation fires on every pipeline run.</p>
+      </div>
+
+      <div class="card">
+        <div class="card-icon icon-green">Q</div>
+        <h4>Custom Quality Rules</h4>
+        <p>7 rule types: not_null, unique, range, regex, enum, type_check, length. Create per-dataset or global rules. Run validation on demand or automatically during pipeline execution.</p>
+      </div>
+
+      <div class="card">
+        <div class="card-icon icon-accent">S</div>
+        <h4>Scheduled Scans</h4>
+        <p>Automated re-profiling on hourly, daily, or weekly schedules. Background scheduler loop polls every 60 seconds. Runs the full pipeline: parse → profile → detect → score → drift → alerts.</p>
+      </div>
+
+      <div class="card">
+        <div class="card-icon icon-amber">L</div>
+        <h4>Data Lineage</h4>
+        <p>Visual DAG showing every transformation: upload → profile → issues → repair → version. Nodes carry metadata; edges are typed (processed_by, detected, repaired_by, versioned). Rendered with React Flow + dagre layout.</p>
+      </div>
+
+      <div class="card">
+        <div class="card-icon icon-accent">V</div>
+        <h4>Version History</h4>
+        <p>Every repair creates a versioned snapshot of the dataset. Browse version timeline, compare changes, download any version. Each version records row count and change summary.</p>
+      </div>
+
+      <div class="card">
+        <div class="card-icon icon-sky">I</div>
+        <h4>Multi-Source Ingestion</h4>
+        <p>Upload files (CSV, XLSX, Parquet), import from public URLs, connect Google Sheets (auto-converts share links), or query PostgreSQL databases directly. 200 MB upload limit.</p>
+      </div>
+
+      <div class="card">
+        <div class="card-icon icon-green">E</div>
+        <h4>Export &amp; Reports</h4>
+        <p>Download datasets in original format. Export Excel reports (3 sheets: summary, column profiles, issues) or PDF reports with trust score charts and issue tables.</p>
+      </div>
+
+      <div class="card">
+        <div class="card-icon icon-amber">W</div>
+        <h4>Webhooks &amp; CI/CD Gate</h4>
+        <p>Outbound webhooks for 6 event types with HMAC-SHA256 signing. Quality gate endpoint returns pass/fail against a minimum trust score — plug into any CI/CD pipeline.</p>
+      </div>
+
+      <div class="card">
+        <div class="card-icon icon-accent">U</div>
+        <h4>User Management</h4>
+        <p>Role-based access: admin, analyst, viewer. First signup auto-promotes to admin. Admins manage users, toggle active/disabled, change roles. JWT auth with 72-hour token expiry.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════ AUTH FLOW ═══════════════ -->
+<section>
+  <div class="wrap">
+    <div class="section-label">Security</div>
+    <div class="section-title">Authentication &amp; Authorization</div>
+    <div class="section-desc">JWT-based auth with bcrypt password hashing and role-based access control across three tiers.</div>
+
+    <figure>
+      <svg viewBox="0 0 1000 240" role="img" aria-label="Auth flow: client sends credentials, server verifies with bcrypt, issues JWT with user ID, email, and role, client sends JWT on subsequent requests, server validates and checks role.">
+        <!-- Client -->
+        <rect x="30" y="40" width="140" height="160" rx="10" fill="var(--svg-fill-light)" stroke="var(--svg-stroke)" stroke-width="1.5"/>
+        <text x="100" y="75" text-anchor="middle" font-family="Space Grotesk, sans-serif" font-size="13" font-weight="600" fill="var(--svg-stroke)">Client</text>
+        <text x="100" y="100" text-anchor="middle" font-family="Inter, sans-serif" font-size="10" fill="var(--text-muted)">email + password</text>
+        <text x="100" y="140" text-anchor="middle" font-family="Inter, sans-serif" font-size="10" fill="var(--text-muted)">Stores JWT in</text>
+        <text x="100" y="155" text-anchor="middle" font-family="Inter, sans-serif" font-size="10" fill="var(--text-muted)">localStorage</text>
+        <text x="100" y="185" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="9" fill="var(--svg-accent)">Authorization:</text>
+        <text x="100" y="195" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="9" fill="var(--svg-accent)">Bearer &lt;token&gt;</text>
+
+        <!-- Arrow: signup/login -->
+        <line x1="170" y1="80" x2="290" y2="80" stroke="var(--svg-accent)" stroke-width="1.5" marker-end="url(#arr)"/>
+        <text x="230" y="72" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="9" fill="var(--svg-accent)">POST /auth/login</text>
+
+        <!-- Auth Service -->
+        <rect x="292" y="40" width="170" height="80" rx="10" fill="var(--svg-fill-light)" stroke="var(--svg-accent)" stroke-width="2"/>
+        <text x="377" y="68" text-anchor="middle" font-family="Space Grotesk, sans-serif" font-size="13" font-weight="600" fill="var(--svg-accent)">Auth Service</text>
+        <text x="377" y="88" text-anchor="middle" font-family="Inter, sans-serif" font-size="10" fill="var(--text-muted)">bcrypt verify</text>
+        <text x="377" y="104" text-anchor="middle" font-family="Inter, sans-serif" font-size="10" fill="var(--text-muted)">python-jose HS256</text>
+
+        <!-- Arrow: JWT back -->
+        <line x1="290" y1="100" x2="172" y2="140" stroke="var(--svg-green)" stroke-width="1.5" marker-end="url(#arr)"/>
+        <text x="215" y="130" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="9" fill="var(--svg-green)">JWT token</text>
+
+        <!-- JWT token box -->
+        <rect x="500" y="40" width="200" height="80" rx="10" fill="var(--svg-fill-light)" stroke="var(--svg-amber)" stroke-width="1.5"/>
+        <text x="600" y="63" text-anchor="middle" font-family="Space Grotesk, sans-serif" font-size="12" font-weight="600" fill="var(--svg-amber)">JWT Payload</text>
+        <text x="600" y="82" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="10" fill="var(--svg-stroke)">{sub, email, role, exp}</text>
+        <text x="600" y="104" text-anchor="middle" font-family="Inter, sans-serif" font-size="10" fill="var(--text-muted)">72-hour expiry</text>
+        <line x1="462" y1="80" x2="498" y2="80" stroke="var(--svg-amber)" stroke-width="1.5" marker-end="url(#arr)"/>
+
+        <!-- Roles -->
+        <rect x="740" y="30" width="230" height="100" rx="10" fill="var(--svg-fill-light)" stroke="var(--svg-stroke)" stroke-width="1.5"/>
+        <text x="855" y="55" text-anchor="middle" font-family="Space Grotesk, sans-serif" font-size="12" font-weight="600" fill="var(--svg-stroke)">Role-Based Access</text>
+        <text x="855" y="78" text-anchor="middle" font-family="Inter, sans-serif" font-size="11" fill="var(--svg-accent)">admin — full access, user mgmt</text>
+        <text x="855" y="96" text-anchor="middle" font-family="Inter, sans-serif" font-size="11" fill="var(--svg-green)">analyst — datasets, repairs, rules</text>
+        <text x="855" y="114" text-anchor="middle" font-family="Inter, sans-serif" font-size="11" fill="var(--svg-sky)">viewer — read-only access</text>
+        <line x1="700" y1="80" x2="738" y2="80" stroke="var(--svg-stroke)" stroke-width="1.5" marker-end="url(#arr)"/>
+
+        <!-- Protected routes box -->
+        <rect x="292" y="150" width="678" height="50" rx="10" fill="var(--accent-light)" stroke="var(--border-accent)" stroke-width="1.5"/>
+        <text x="631" y="180" text-anchor="middle" font-family="Inter, sans-serif" font-size="12" fill="var(--svg-accent)">All 14 protected routers enforce auth at the router level via FastAPI dependencies — zero per-endpoint decoration needed</text>
+      </svg>
+      <figcaption>Auth enforcement is at the router registration level: public routers (health, auth) mount without guards; all 14 protected routers receive the JWT dependency when registered on the FastAPI app instance. Password minimum: 8 characters. First user auto-promoted to admin.</figcaption>
+    </figure>
+
+    <details>
+      <summary>How does JWT authentication work in detail? <span class="detail-tag">Deep Dive</span></summary>
+      <div class="detail-body">
+        <p><strong>Signup flow:</strong></p>
+        <ul>
+          <li>Client sends <code>POST /api/auth/signup</code> with email, password (min 8 chars), full_name</li>
+          <li>Password is hashed with <strong>bcrypt</strong> — a one-way hash with automatic salt. Even if the database is stolen, passwords can't be reversed</li>
+          <li>First user ever to sign up is auto-promoted to <code>admin</code>. All subsequent users get <code>analyst</code> role</li>
+          <li>A JWT is created: <code>{sub: user_id, email: "...", role: "analyst", exp: now+72h}</code>, signed with HS256</li>
+        </ul>
+        <p><strong>Login flow:</strong></p>
+        <ul>
+          <li>Client sends email + password → backend looks up user → <code>bcrypt.verify(password, hashed)</code></li>
+          <li>If valid, new JWT issued (72-hour expiry). Returned to frontend.</li>
+        </ul>
+        <p><strong>Request authentication:</strong></p>
+        <ul>
+          <li>Frontend stores token in <code>localStorage</code> and attaches it as <code>Authorization: Bearer &lt;token&gt;</code> on every request via Axios interceptor</li>
+          <li>Backend <code>get_current_user()</code> dependency decodes the token, looks up the user in the database, and verifies they exist and are active</li>
+          <li>If token is expired/invalid/user disabled → HTTP 401</li>
+        </ul>
+        <p><strong>Why router-level auth?</strong> Instead of decorating each endpoint individually (error-prone — you might forget one), auth is applied when registering routers on the FastAPI app. Public routers (health, auth) mount without guards. All 14 protected routers receive <code>dependencies=[Depends(get_current_user)]</code> at registration time. This makes it impossible to accidentally expose an unprotected endpoint.</p>
+      </div>
+    </details>
+  </div>
+</section>
+
+<!-- ═══════════════ TECH STACK ═══════════════ -->
+<section>
+  <div class="wrap">
+    <div class="section-label">Technology</div>
+    <div class="section-title">Tech Stack</div>
+    <div class="section-desc">Modern async Python backend with a React 19 frontend, deployed on free-tier cloud infrastructure.</div>
+
+    <div class="stack-grid">
+      <div class="stack-col">
+        <h3>Backend</h3>
+        <div class="stack-item"><span class="name">FastAPI</span><span class="ver">0.115.6</span></div>
+        <div class="stack-item"><span class="name">Uvicorn (ASGI)</span><span class="ver">0.34.0</span></div>
+        <div class="stack-item"><span class="name">SQLAlchemy (async)</span><span class="ver">2.0.36</span></div>
+        <div class="stack-item"><span class="name">Pandas</span><span class="ver">2.2.3</span></div>
+        <div class="stack-item"><span class="name">NumPy</span><span class="ver">2.2.1</span></div>
+        <div class="stack-item"><span class="name">Pydantic</span><span class="ver">2.10.4</span></div>
+        <div class="stack-item"><span class="name">python-jose (JWT)</span><span class="ver">3.3.0</span></div>
+        <div class="stack-item"><span class="name">bcrypt</span><span class="ver">4.2.0</span></div>
+        <div class="stack-item"><span class="name">Google Generative AI</span><span class="ver">0.8.4</span></div>
+        <div class="stack-item"><span class="name">httpx</span><span class="ver">0.28.1</span></div>
+        <div class="stack-item"><span class="name">openpyxl (Excel)</span><span class="ver">3.1.5</span></div>
+        <div class="stack-item"><span class="name">PyArrow (Parquet)</span><span class="ver">18.1.0</span></div>
+        <div class="stack-item"><span class="name">fpdf2 (PDF)</span><span class="ver">2.8.1</span></div>
+        <div class="stack-item"><span class="name">aiosqlite</span><span class="ver">0.20.0</span></div>
+        <div class="stack-item"><span class="name">asyncpg</span><span class="ver">0.30.0</span></div>
+      </div>
+      <div class="stack-col">
+        <h3>Frontend</h3>
+        <div class="stack-item"><span class="name">React</span><span class="ver">19.2.5</span></div>
+        <div class="stack-item"><span class="name">Vite</span><span class="ver">8.0.10</span></div>
+        <div class="stack-item"><span class="name">Tailwind CSS</span><span class="ver">4.2.4</span></div>
+        <div class="stack-item"><span class="name">React Router</span><span class="ver">7.15.0</span></div>
+        <div class="stack-item"><span class="name">TanStack React Query</span><span class="ver">5.100.9</span></div>
+        <div class="stack-item"><span class="name">TanStack React Table</span><span class="ver">8.21.3</span></div>
+        <div class="stack-item"><span class="name">Recharts</span><span class="ver">3.8.1</span></div>
+        <div class="stack-item"><span class="name">React Flow (@xyflow)</span><span class="ver">12.10.2</span></div>
+        <div class="stack-item"><span class="name">Axios</span><span class="ver">1.16.0</span></div>
+        <div class="stack-item"><span class="name">Lucide React</span><span class="ver">1.14.0</span></div>
+        <div class="stack-item"><span class="name">Sonner (toasts)</span><span class="ver">2.0.8</span></div>
+        <div class="stack-item"><span class="name">dagre (layout)</span><span class="ver">3.0.0</span></div>
+        <div class="stack-item"><span class="name">clsx + tailwind-merge</span><span class="ver">2.1 / 3.5</span></div>
+        <div style="height: 12px"></div>
+        <h3>Infrastructure</h3>
+        <div class="stack-item"><span class="name">Frontend hosting</span><span class="ver">Vercel</span></div>
+        <div class="stack-item"><span class="name">Backend hosting</span><span class="ver">Render</span></div>
+        <div class="stack-item"><span class="name">Source control</span><span class="ver">GitHub</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════ API SURFACE ═══════════════ -->
+<section>
+  <div class="wrap">
+    <div class="section-label">API</div>
+    <div class="section-title">Endpoint Surface</div>
+    <div class="section-desc">55+ RESTful endpoints across 14 routers. All protected endpoints require JWT Bearer auth (except health and auth).</div>
+
+    <div class="two-col">
+      <div>
+        <div class="ep-group">
+          <h4>Authentication</h4>
+          <div class="ep"><span class="ep-method ep-post">POST</span><span class="ep-path">/api/auth/signup</span></div>
+          <div class="ep"><span class="ep-method ep-post">POST</span><span class="ep-path">/api/auth/login</span></div>
+          <div class="ep"><span class="ep-method ep-get">GET</span><span class="ep-path">/api/auth/me</span></div>
+          <div class="ep"><span class="ep-method ep-put">PUT</span><span class="ep-path">/api/auth/me</span></div>
+          <div class="ep"><span class="ep-method ep-get">GET</span><span class="ep-path">/api/auth/users</span></div>
+          <div class="ep"><span class="ep-method ep-put">PUT</span><span class="ep-path">/api/auth/users/:id/role</span></div>
+        </div>
+
+        <div class="ep-group">
+          <h4>Datasets</h4>
+          <div class="ep"><span class="ep-method ep-post">POST</span><span class="ep-path">/api/datasets/upload</span></div>
+          <div class="ep"><span class="ep-method ep-post">POST</span><span class="ep-path">/api/datasets/import/url</span></div>
+          <div class="ep"><span class="ep-method ep-post">POST</span><span class="ep-path">/api/datasets/import/google-sheets</span></div>
+          <div class="ep"><span class="ep-method ep-post">POST</span><span class="ep-path">/api/datasets/import/postgresql</span></div>
+          <div class="ep"><span class="ep-method ep-get">GET</span><span class="ep-path">/api/datasets/</span></div>
+          <div class="ep"><span class="ep-method ep-get">GET</span><span class="ep-path">/api/datasets/:id</span></div>
+          <div class="ep"><span class="ep-method ep-get">GET</span><span class="ep-path">/api/datasets/:id/profile</span></div>
+          <div class="ep"><span class="ep-method ep-get">GET</span><span class="ep-path">/api/datasets/:id/issues</span></div>
+          <div class="ep"><span class="ep-method ep-post">POST</span><span class="ep-path">/api/datasets/:id/repair</span></div>
+          <div class="ep"><span class="ep-method ep-get">GET</span><span class="ep-path">/api/datasets/:id/trust-score</span></div>
+          <div class="ep"><span class="ep-method ep-get">GET</span><span class="ep-path">/api/datasets/:id/preview</span></div>
+          <div class="ep"><span class="ep-method ep-get">GET</span><span class="ep-path">/api/datasets/:id/lineage</span></div>
+          <div class="ep"><span class="ep-method ep-get">GET</span><span class="ep-path">/api/datasets/:id/drift</span></div>
+          <div class="ep"><span class="ep-method ep-get">GET</span><span class="ep-path">/api/datasets/:id/versions</span></div>
+          <div class="ep"><span class="ep-method ep-get">GET</span><span class="ep-path">/api/datasets/:id/report</span></div>
+          <div class="ep"><span class="ep-method ep-get">GET</span><span class="ep-path">/api/datasets/:id/download</span></div>
+          <div class="ep"><span class="ep-method ep-del">DEL</span><span class="ep-path">/api/datasets/:id</span></div>
+        </div>
+
+        <div class="ep-group">
+          <h4>Quality Rules</h4>
+          <div class="ep"><span class="ep-method ep-post">POST</span><span class="ep-path">/api/rules/</span></div>
+          <div class="ep"><span class="ep-method ep-get">GET</span><span class="ep-path">/api/rules/</span></div>
+          <div class="ep"><span class="ep-method ep-put">PUT</span><span class="ep-path">/api/rules/:id</span></div>
+          <div class="ep"><span class="ep-method ep-del">DEL</span><span class="ep-path">/api/rules/:id</span></div>
+        </div>
+      </div>
+
+      <div>
+        <div class="ep-group">
+          <h4>Alerts &amp; Rules</h4>
+          <div class="ep"><span class="ep-method ep-get">GET</span><span class="ep-path">/api/alerts/</span></div>
+          <div class="ep"><span class="ep-method ep-get">GET</span><span class="ep-path">/api/alerts/unread-count</span></div>
+          <div class="ep"><span class="ep-method ep-post">POST</span><span class="ep-path">/api/alerts/mark-read</span></div>
+          <div class="ep"><span class="ep-method ep-post">POST</span><span class="ep-path">/api/alerts/rules</span></div>
+          <div class="ep"><span class="ep-method ep-get">GET</span><span class="ep-path">/api/alerts/rules</span></div>
+          <div class="ep"><span class="ep-method ep-patch">PATCH</span><span class="ep-path">/api/alerts/rules/:id</span></div>
+        </div>
+
+        <div class="ep-group">
+          <h4>Contracts</h4>
+          <div class="ep"><span class="ep-method ep-get">GET</span><span class="ep-path">/api/datasets/:id/contract</span></div>
+          <div class="ep"><span class="ep-method ep-post">POST</span><span class="ep-path">/api/datasets/:id/contract</span></div>
+          <div class="ep"><span class="ep-method ep-post">POST</span><span class="ep-path">/api/datasets/:id/contract/validate</span></div>
+        </div>
+
+        <div class="ep-group">
+          <h4>AI Intelligence</h4>
+          <div class="ep"><span class="ep-method ep-get">GET</span><span class="ep-path">/api/ai/:id/summary</span></div>
+          <div class="ep"><span class="ep-method ep-get">GET</span><span class="ep-path">/api/ai/:id/explain-issues</span></div>
+          <div class="ep"><span class="ep-method ep-post">POST</span><span class="ep-path">/api/ai/:id/nl-command</span></div>
+          <div class="ep"><span class="ep-method ep-get">GET</span><span class="ep-path">/api/ai/:id/cleaning-code</span></div>
+        </div>
+
+        <div class="ep-group">
+          <h4>Scheduling &amp; Auto-Repair</h4>
+          <div class="ep"><span class="ep-method ep-put">PUT</span><span class="ep-path">/api/schedules/:dataset_id</span></div>
+          <div class="ep"><span class="ep-method ep-get">GET</span><span class="ep-path">/api/schedules/:dataset_id</span></div>
+          <div class="ep"><span class="ep-method ep-put">PUT</span><span class="ep-path">/api/auto-repair/:dataset_id</span></div>
+          <div class="ep"><span class="ep-method ep-post">POST</span><span class="ep-path">/api/auto-repair/:dataset_id/run</span></div>
+        </div>
+
+        <div class="ep-group">
+          <h4>Webhooks &amp; Pipeline</h4>
+          <div class="ep"><span class="ep-method ep-post">POST</span><span class="ep-path">/api/webhooks/</span></div>
+          <div class="ep"><span class="ep-method ep-get">GET</span><span class="ep-path">/api/webhooks/</span></div>
+          <div class="ep"><span class="ep-method ep-get">GET</span><span class="ep-path">/api/pipeline/gate/:dataset_id</span></div>
+        </div>
+
+        <div class="ep-group">
+          <h4>Activity &amp; Jobs</h4>
+          <div class="ep"><span class="ep-method ep-get">GET</span><span class="ep-path">/api/activity/</span></div>
+          <div class="ep"><span class="ep-method ep-get">GET</span><span class="ep-path">/api/jobs/</span></div>
+          <div class="ep"><span class="ep-method ep-get">GET</span><span class="ep-path">/api/jobs/:id</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════ DATABASE ═══════════════ -->
+<section>
+  <div class="wrap">
+    <div class="section-label">Data Layer</div>
+    <div class="section-title">Database Schema</div>
+    <div class="section-desc">22 tables managed by SQLAlchemy async ORM with auto-migration on startup. Full audit trail on every action.</div>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>Table</th><th>Purpose</th><th>Key Fields</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><code>users</code></td><td>Authentication &amp; roles</td><td>email, hashed_password, role, is_active</td></tr>
+          <tr><td><code>datasets</code></td><td>Core dataset metadata</td><td>name, file_path, file_type, row_count, trust_score, status</td></tr>
+          <tr><td><code>dataset_versions</code></td><td>Versioned snapshots</td><td>version_number, file_path, row_count, change_summary</td></tr>
+          <tr><td><code>column_profiles</code></td><td>Per-column statistics</td><td>detected_type, null/unique/dup counts, mean/median/std, PII</td></tr>
+          <tr><td><code>validation_runs</code></td><td>Detection run history</td><td>status, total_rules_checked, total_issues_found</td></tr>
+          <tr><td><code>detected_issues</code></td><td>Quality issues</td><td>issue_type, severity, column_name, affected_count, status</td></tr>
+          <tr><td><code>repair_suggestions</code></td><td>AI-generated fix proposals</td><td>strategy, confidence, is_recommended, preview</td></tr>
+          <tr><td><code>repair_actions</code></td><td>Applied repair log</td><td>status, rows_affected, applied_at</td></tr>
+          <tr><td><code>quality_rules</code></td><td>User-defined validation rules</td><td>rule_type, column_name, parameters (JSON), severity</td></tr>
+          <tr><td><code>audit_logs</code></td><td>Full audit trail</td><td>action, description, before/after snapshots, metadata</td></tr>
+          <tr><td><code>jobs</code></td><td>Background task tracking</td><td>job_type, status, progress (%), error_message</td></tr>
+          <tr><td><code>data_contracts</code></td><td>SLA definitions</td><td>min_trust_score, max_null_pct, schema_definition</td></tr>
+          <tr><td><code>scan_schedules</code></td><td>Automated scan config</td><td>frequency, is_active, next_run_at, last_run_at</td></tr>
+          <tr><td><code>auto_repair_configs</code></td><td>Auto-repair settings</td><td>is_active, min_confidence</td></tr>
+          <tr><td><code>lineage_nodes</code></td><td>DAG nodes</td><td>node_type, label, entity_id, metadata</td></tr>
+          <tr><td><code>lineage_edges</code></td><td>DAG edges</td><td>source_node_id, target_node_id, edge_type</td></tr>
+          <tr><td><code>profile_baselines</code></td><td>Drift baselines</td><td>column_name, baseline_stats (JSON)</td></tr>
+          <tr><td><code>drift_reports</code></td><td>Detected drift</td><td>drift_type, column_name, drift_score, severity</td></tr>
+          <tr><td><code>alert_rules</code></td><td>Alert conditions</td><td>condition_type, threshold, is_active</td></tr>
+          <tr><td><code>alerts</code></td><td>Fired alerts</td><td>alert_type, severity, title, message, is_read</td></tr>
+          <tr><td><code>webhook_endpoints</code></td><td>Outbound webhooks</td><td>url, events (JSON), secret, is_active</td></tr>
+          <tr><td><code>trust_score_snapshots</code></td><td>Score history</td><td>score, event_type, recorded_at</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════ LIMITS ═══════════════ -->
+<section>
+  <div class="wrap">
+    <div class="section-label">Configuration</div>
+    <div class="section-title">Limits &amp; Constraints</div>
+    <div class="section-desc">Key operational parameters and their defaults. All backend settings are configurable via environment variables.</div>
+
+    <div class="two-col">
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Parameter</th><th>Value</th></tr></thead>
+          <tbody>
+            <tr><td>Max upload file size</td><td><code>200 MB</code></td></tr>
+            <tr><td>Supported file types</td><td><code>CSV, XLSX, XLS, Parquet</code></td></tr>
+            <tr><td>Preview row limit</td><td><code>1,000 rows/request</code></td></tr>
+            <tr><td>Dataset list page size</td><td><code>max 100</code></td></tr>
+            <tr><td>Issues list page size</td><td><code>max 50</code></td></tr>
+            <tr><td>Stored affected rows/issue</td><td><code>first 50 indices</code></td></tr>
+            <tr><td>Outlier detection minimum</td><td><code>10 non-null values</code></td></tr>
+            <tr><td>Type detection sample</td><td><code>100 rows</code></td></tr>
+            <tr><td>Row count limit</td><td>Memory-bound only</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Parameter</th><th>Value</th></tr></thead>
+          <tbody>
+            <tr><td>JWT expiry</td><td><code>72 hours</code></td></tr>
+            <tr><td>JWT algorithm</td><td><code>HS256</code></td></tr>
+            <tr><td>Min password length</td><td><code>8 characters</code></td></tr>
+            <tr><td>Scheduler poll interval</td><td><code>60 seconds</code></td></tr>
+            <tr><td>URL import timeout</td><td><code>60 seconds</code></td></tr>
+            <tr><td>Webhook delivery timeout</td><td><code>10 seconds</code></td></tr>
+            <tr><td>Upload chunk size</td><td><code>1 MB</code></td></tr>
+            <tr><td>Scan frequencies</td><td><code>hourly/daily/weekly</code></td></tr>
+            <tr><td>Render cold start</td><td><code>~30-60 seconds</code></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="highlight-box" style="margin-top: 24px;">
+      <h4>Environment Variables</h4>
+      <p><code>DATABASE_URL</code> &bull; <code>UPLOAD_DIR</code> &bull; <code>GEMINI_API_KEY</code> &bull; <code>CORS_ORIGINS</code> &bull; <code>MAX_UPLOAD_SIZE_MB</code> &bull; <code>JWT_SECRET_KEY</code> &bull; <code>JWT_ALGORITHM</code> &bull; <code>JWT_EXPIRY_HOURS</code> &bull; <code>RESEND_API_KEY</code> &bull; <code>RESEND_FROM_EMAIL</code></p>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════ DETECTION STRATEGIES ═══════════════ -->
+<section>
+  <div class="wrap">
+    <div class="section-label">Engine Detail</div>
+    <div class="section-title">Detection &amp; Repair Strategies</div>
+
+    <div class="two-col">
+      <div>
+        <h3 style="font-size: 16px; margin-bottom: 16px;">Issue Detection (4 passes)</h3>
+        <div class="card" style="margin-bottom: 12px;">
+          <h4>Missing Values</h4>
+          <p>Per-column null count and percentage. Severity: <strong>critical</strong> (&gt;30%), <strong>warning</strong> (&gt;5%), <strong>info</strong> (any). Suggests mean/median/mode imputation or row drop.</p>
+        </div>
+        <div class="card" style="margin-bottom: 12px;">
+          <h4>Duplicate Rows</h4>
+          <p>Exact full-row match detection. Severity: <strong>warning</strong> (&lt;10% of rows) or <strong>critical</strong>. Suggests deduplication keeping first occurrence.</p>
+        </div>
+        <div class="card" style="margin-bottom: 12px;">
+          <h4>Outliers</h4>
+          <p>IQR method on numeric columns (requires &ge;10 values). Values below Q1&minus;1.5&times;IQR or above Q3+1.5&times;IQR flagged as <strong>warning</strong>. Suggests clip or remove.</p>
+        </div>
+        <div class="card">
+          <h4>Type Mismatches</h4>
+          <p>Columns that are &gt;50% numeric but contain non-numeric values (&lt;30% of sample). Flagged as <strong>warning</strong>. Suggests coerce to numeric with NaN replacement.</p>
+        </div>
+      </div>
+      <div>
+        <h3 style="font-size: 16px; margin-bottom: 16px;">Repair Strategies (8 total)</h3>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Strategy</th><th>Action</th><th>Confidence</th></tr></thead>
+            <tbody>
+              <tr><td><code>mean_imputation</code></td><td>Fill nulls with column mean</td><td>0.80</td></tr>
+              <tr><td><code>median_imputation</code></td><td>Fill nulls with column median</td><td>0.85</td></tr>
+              <tr><td><code>mode_imputation</code></td><td>Fill nulls with most common value</td><td>0.70</td></tr>
+              <tr><td><code>drop_rows</code></td><td>Remove rows with nulls</td><td>0.50</td></tr>
+              <tr><td><code>deduplicate</code></td><td>Remove duplicate rows (keep first)</td><td>0.95</td></tr>
+              <tr><td><code>clip_outlier</code></td><td>Clamp values to IQR bounds</td><td>0.85</td></tr>
+              <tr><td><code>remove_outlier_rows</code></td><td>Delete rows with outliers</td><td>0.60</td></tr>
+              <tr><td><code>coerce_type</code></td><td>Convert to numeric, NaN for invalid</td><td>0.75</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="highlight-box" style="margin-top: 16px;">
+          <h4>Auto-Repair Safety</h4>
+          <p>Only strategies in the safe allowlist run autonomously. Configurable minimum confidence threshold per dataset. Every repair creates a versioned snapshot for rollback.</p>
+        </div>
+      </div>
+    </div>
+
+    <details>
+      <summary>How does each detection algorithm work? <span class="detail-tag">Algorithm Detail</span></summary>
+      <div class="detail-body">
+        <p><strong>Missing Values — per column:</strong></p>
+        <ul>
+          <li>Count nulls via <code>df[col].isna().sum()</code></li>
+          <li>Calculate percentage: <code>null_count / total_rows × 100</code></li>
+          <li>Severity thresholds: &gt;30% = critical, &gt;5% = warning, any = info</li>
+          <li>Stores first 50 affected row indices for the UI to highlight</li>
+          <li>For numeric columns: generates mean + median imputation suggestions (median is recommended — more robust to outliers)</li>
+          <li>For non-numeric: generates mode imputation (fill with most common value)</li>
+          <li>Always offers <code>drop_rows</code> as a last resort (lowest confidence at 0.50)</li>
+        </ul>
+        <p><strong>Duplicate Rows — dataset-wide:</strong></p>
+        <ul>
+          <li>Uses <code>df.duplicated(keep=False)</code> — marks ALL copies of duplicate rows, not just the second one</li>
+          <li>If &ge;10% of rows are duplicates → critical severity</li>
+          <li>Deduplication keeps first occurrence: <code>df.drop_duplicates()</code> with confidence 0.95</li>
+        </ul>
+        <p><strong>Outliers — IQR method, per numeric column:</strong></p>
+        <ul>
+          <li>Requires &ge;10 non-null values to run (avoids false positives on tiny samples)</li>
+          <li>Q1 = 25th percentile, Q3 = 75th percentile, IQR = Q3 − Q1</li>
+          <li>Lower bound = Q1 − 1.5 × IQR, Upper bound = Q3 + 1.5 × IQR</li>
+          <li>Values outside these bounds flagged as outliers</li>
+          <li>Clip suggestion: <code>df[col].clip(lower, upper)</code> — values are clamped to the bounds</li>
+          <li>Remove suggestion: delete rows with outliers entirely (lower confidence)</li>
+        </ul>
+        <p><strong>Type Mismatches — per column, sample-based:</strong></p>
+        <ul>
+          <li>Samples 200 values from each non-numeric column</li>
+          <li>Tries parsing each as float (handling commas, whitespace)</li>
+          <li>If &gt;50% parse as numeric BUT some don't (&lt;30% failures) → mixed-type column</li>
+          <li>Example: a "price" column with ["10", "20", "N/A", "30"] — mostly numeric but "N/A" breaks it</li>
+          <li>Coerce suggestion: <code>pd.to_numeric(df[col], errors='coerce')</code> — non-parseable values become NaN</li>
+        </ul>
+      </div>
+    </details>
+
+    <details>
+      <summary>How does the AI integration (Gemini) work? <span class="detail-tag">Deep Dive</span></summary>
+      <div class="detail-body">
+        <p>The app uses <strong>Google Gemini 1.5 Flash</strong> (fast, cost-effective LLM) for 4 features:</p>
+        <ul>
+          <li><strong>AI Dataset Summary</strong> — sends column profiles + issues to Gemini, asks for an executive-level data quality assessment. Returns plain-English summary with recommendations.</li>
+          <li><strong>Issue Explanations</strong> — for each detected issue, asks Gemini to explain it to a business analyst, including potential business impact.</li>
+          <li><strong>Natural Language Commands</strong> — you type "fill missing ages with median" and Gemini parses it into a structured action <code>{strategy: "median_imputation", column: "Age"}</code>. A regex fallback parser handles common patterns if the API is down.</li>
+          <li><strong>Cleaning Code Export</strong> — generates reproducible pandas code for all applied repairs. Copy into a Jupyter notebook to replicate the exact pipeline.</li>
+        </ul>
+        <p><strong>Every AI feature has a hardcoded fallback.</strong> If the Gemini API key isn't configured or the API is unavailable, features return sensible defaults instead of crashing. This is critical for the free-tier deployment.</p>
+      </div>
+    </details>
+  </div>
+</section>
+
+<!-- ═══════════════ TOUGH QUESTIONS ═══════════════ -->
+<section>
+  <div class="wrap">
+    <div class="section-label">Preparation</div>
+    <div class="section-title">Anticipated Questions &amp; Answers</div>
+    <div class="section-desc">Click to expand answers for questions you might get during the presentation.</div>
+
+    <details>
+      <summary>"What makes this different from just running pandas scripts?"</summary>
+      <div class="detail-body">
+        <p>Pandas is a library — you still need to write the profiling code, detection logic, repair strategies, scoring formula, and build a UI. CleanOps AI is a <strong>platform</strong> that does all of that autonomously, tracks version history, monitors for drift over time, and integrates into CI/CD pipelines through a quality gate API. It's the difference between writing individual SQL queries and using a database management tool.</p>
+      </div>
+    </details>
+
+    <details>
+      <summary>"How does this scale with larger datasets?"</summary>
+      <div class="detail-body">
+        <p>The processing engine uses Pandas, so it's limited by server memory — roughly datasets up to a few million rows on standard hardware. On Render free tier (512 MB RAM), it handles ~500K rows comfortably. For production scale, the profiling and detection services are modular — they could be swapped to use <strong>Spark, DuckDB, or Polars</strong> without changing the API layer or the frontend. The architecture separates the computation engine from the platform logic.</p>
+      </div>
+    </details>
+
+    <details>
+      <summary>"Why SQLite instead of PostgreSQL?"</summary>
+      <div class="detail-body">
+        <p>SQLite is used for <strong>zero-configuration development</strong> — no database server needed, the database is just a file. The database URL is a single environment variable (<code>DATABASE_URL</code>). Change it to a PostgreSQL connection string and everything works because SQLAlchemy abstracts the entire database layer. The same ORM models, same queries, same migrations work on both engines. This is a deliberate architecture choice: <strong>database-agnostic by design</strong>.</p>
+      </div>
+    </details>
+
+    <details>
+      <summary>"Why not use Great Expectations or dbt tests?"</summary>
+      <div class="detail-body">
+        <p>Great Expectations and dbt are <strong>rule-based testing frameworks</strong> — you write the rules (expectations/tests), and they check data against those rules. CleanOps AI <strong>auto-detects issues without any configuration</strong>. Upload a file and it finds missing values, duplicates, outliers, and type problems automatically. It also provides auto-repair, trust scoring, AI explanations, drift monitoring, and a full visual UI. GE is a library; CleanOps AI is a platform.</p>
+      </div>
+    </details>
+
+    <details>
+      <summary>"What about real-time streaming data?"</summary>
+      <div class="detail-body">
+        <p>The current architecture handles <strong>batch data</strong> — file uploads and scheduled scans. For streaming, you'd add a Kafka or Redis queue consumer that triggers the pipeline on new data arrival. The pipeline itself is already async and could process micro-batches. The scheduled scan infrastructure (which already runs the full pipeline on a timer) is the foundation — extending it to event-driven triggers is a natural next step.</p>
+      </div>
+    </details>
+
+    <details>
+      <summary>"Is the data secure?"</summary>
+      <div class="detail-body">
+        <p>Multiple layers of security:</p>
+        <ul>
+          <li><strong>Passwords:</strong> bcrypt hashing with automatic salt — one-way, not reversible</li>
+          <li><strong>Authentication:</strong> JWT tokens with 72-hour expiry, required on every protected endpoint</li>
+          <li><strong>Authorization:</strong> Role-based access (admin/analyst/viewer) enforced at the router level</li>
+          <li><strong>File security:</strong> Filename sanitization prevents path traversal attacks</li>
+          <li><strong>API validation:</strong> Pydantic validates every request body, query parameter, and path parameter</li>
+          <li><strong>CORS:</strong> Configurable allowed origins</li>
+          <li><strong>Webhooks:</strong> HMAC-SHA256 signed so receivers can verify authenticity</li>
+        </ul>
+      </div>
+    </details>
+  </div>
+</section>
+
+<!-- ═══════════════ FOOTER ═══════════════ -->
+<div class="footer">
+  <div class="wrap">
+    <p><strong>CleanOps AI</strong> &mdash; Autonomous Data Reliability Platform</p>
+    <p style="margin-top: 4px;">
+      <a href="https://clean-ops-ai.vercel.app">Live Demo</a> &bull;
+      <a href="https://github.com/AnvithaAnand/CleanOps-AI">GitHub</a> &bull;
+      <a href="https://cleanops-ai.onrender.com/docs">API Docs (Swagger)</a>
+    </p>
+    <p style="margin-top: 8px; font-size: 12px;">Built with FastAPI + React 19 &bull; Deployed on Vercel + Render</p>
+  </div>
+</div>

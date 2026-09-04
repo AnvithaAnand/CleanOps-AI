@@ -46,3 +46,6 @@ htmlcov/
 
 # Claude Code
 .claude/
+
+.vercel
+.env*
